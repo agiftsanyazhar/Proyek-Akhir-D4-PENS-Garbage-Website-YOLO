@@ -32,14 +32,31 @@ option = st.sidebar.selectbox(
 model = YOLO("garbage.pt")
 
 # Define class names
-classNames = ["Others", "Plastic", "Straw", "Paper"]
+classNames = [
+    "Others",
+    "Plastic",
+    "Straw",
+    "Paper",
+    "Tissue",
+    "Bottle",
+    "Beverage Carton Box",
+    "Cigarette Pack",
+    "Carton",
+    "Food Container",
+]
 
 # Define colors for each class (adjust as needed)
 class_colors = {
     "Others": (255, 0, 0),
     "Plastic": (255, 0, 128),
-    "Straw": (255, 0, 255),
     "Paper": (179, 0, 255),
+    "Straw": (255, 0, 255),
+    "Tissue": (0, 255, 0),
+    "Bottle": (0, 255, 255),
+    "Beverage Carton Box": (0, 128, 255),
+    "Cigarette Pack": (0, 0, 255),
+    "Carton": (255, 255, 0),
+    "Food Container": (255, 128, 0),
 }
 
 
@@ -86,57 +103,63 @@ if option == "Detect from Image File":
         uploads_dir = os.path.join("uploads")
         if not os.path.exists(uploads_dir):
             os.makedirs(uploads_dir)
+
         image_path = os.path.join(uploads_dir, uploaded_image.name)
-        with open(image_path, "wb") as f:
-            f.write(uploaded_image.getbuffer())
 
         # Display uploaded image
+        with open(image_path, "wb") as f:
+            f.write(uploaded_image.getbuffer())
         st.image(image_path, caption="Uploaded Image", use_column_width=True)
 
         if st.button("Start Detection"):
-            # Process image
-            frame = cv2.imread(image_path)
-            frame_width = frame.shape[1]
-            frame_height = frame.shape[0]
+            # Show spinner and warning message
+            with st.spinner("Processing detection..."):
+                # Process image
+                frame = cv2.imread(image_path)
+                frame_width = frame.shape[1]
+                frame_height = frame.shape[0]
 
-            st.warning("Processing detection...")
-            processed_frame = processFrame(frame)
+                processed_frame = processFrame(frame)
 
-            # Save and display processed image
-            output_dir = "output"
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-            output_image_path = os.path.join(output_dir, uploaded_image.name)
-            cv2.imwrite(output_image_path, processed_frame)
+                # Save and display processed image
+                output_dir = "output"
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                output_image_path = os.path.join(output_dir, uploaded_image.name)
 
-            st.success("Image processing completed")
+                cv2.imwrite(output_image_path, processed_frame)
 
-            # Convert BGR to RGB
-            processed_frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
-            st.image(
-                processed_frame_rgb, caption="Processed Image", use_column_width=True
-            )
+                st.success("Image processing completed")
 
-            with open(output_image_path, "rb") as f:
-                yolo_data = f.read()
+                # Convert BGR to RGB
+                processed_frame_rgb = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
 
-            # Optionally, remove the temporary uploaded file
-            os.remove(image_path)
-
-            @st.experimental_fragment
-            def downloadButton():
-                st.download_button(
-                    label="Download Image",
-                    data=yolo_data,
-                    file_name=f"{uploaded_image.name}",
-                    mime="image/jpeg",
-                    help="Click to download the processed image",
+                st.image(
+                    processed_frame_rgb,
+                    caption="Processed Image",
+                    use_column_width=True,
                 )
 
-                with st.spinner("Waiting for 5 seconds!"):
-                    time.sleep(5)
+                with open(output_image_path, "rb") as f:
+                    yolo_data = f.read()
 
-            downloadButton()
+                # Optionally, remove the temporary uploaded file
+                os.remove(image_path)
+
+                @st.experimental_fragment
+                def downloadButton():
+                    st.download_button(
+                        label="Download Image",
+                        data=yolo_data,
+                        file_name=f"{uploaded_image.name}",
+                        mime="image/jpeg",
+                        help="Click to download the processed image",
+                    )
+
+                    with st.spinner("Waiting for 3 seconds!"):
+                        time.sleep(3)
+
+                downloadButton()
 
 elif option == "Detect from Video File":
     uploaded_video = st.file_uploader("Upload a video", type=["mp4"])
@@ -152,84 +175,113 @@ elif option == "Detect from Video File":
         st.video(video_path)
 
         if st.button("Start Detection"):
-            st.warning("Processing detection...")
+            with st.spinner("Processing detection..."):
+                cap = cv2.VideoCapture(video_path)
+                frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                fps = int(cap.get(cv2.CAP_PROP_FPS))
+                total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-            cap = cv2.VideoCapture(video_path)
-            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = int(cap.get(cv2.CAP_PROP_FPS))
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                output_filename = os.path.splitext(uploaded_video.name)[0] + ".mp4"
 
-            output_filename = os.path.splitext(uploaded_video.name)[0] + ".mp4"
-            out_dir = "output"
-            if not os.path.isdir(out_dir):
-                os.makedirs(out_dir)
-            out_path = os.path.join(out_dir, output_filename)
+                out_dir = "output"
+                if not os.path.isdir(out_dir):
+                    os.makedirs(out_dir)
+                out_path = os.path.join(out_dir, output_filename)
 
-            out = cv2.VideoWriter(
-                out_path,
-                cv2.VideoWriter_fourcc(*"mp4v"),
-                fps,
-                (frame_width, frame_height),
-            )
-
-            frame_count = 0
-            while cap.isOpened():
-                success, frame = cap.read()
-
-                if not success:
-                    break
-
-                frame_count += 1
-                print(f"Processing frame {frame_count}/{total_frames}")
-                st.text(f"Processing frame {frame_count}/{total_frames}")
-                frame = processFrame(frame)
-                out.write(frame)
-
-            cap.release()
-            out.release()
-            st.success("Video processing completed")
-
-            with open(out_path, "rb") as f:
-                yolo_data = f.read()
-
-            # Optionally, remove the temporary uploaded file
-            os.remove(video_path)
-
-            @st.experimental_fragment
-            def downloadButton():
-                st.download_button(
-                    label="Download Video",
-                    data=yolo_data,
-                    file_name=output_filename,
-                    mime="video/mp4",
-                    help="Click to download the video",
+                out = cv2.VideoWriter(
+                    out_path,
+                    cv2.VideoWriter_fourcc(*"mp4v"),
+                    fps,
+                    (frame_width, frame_height),
                 )
 
-                with st.spinner("Waiting for 5 seconds!"):
-                    time.sleep(5)
+                frame_count = 0
+                progress_text = st.empty()  # Placeholder for progress text
+                while cap.isOpened():
+                    success, frame = cap.read()
 
-            downloadButton()
+                    if not success:
+                        break
+
+                    frame_count += 1
+
+                    # Update progress text
+                    progress_text.warning(
+                        f"Processing frame {frame_count}/{total_frames}"
+                    )
+
+                    frame = processFrame(frame)
+                    out.write(frame)
+
+                cap.release()
+                out.release()
+
+                st.success("Video processing completed")
+
+                with open(out_path, "rb") as f:
+                    yolo_data = f.read()
+
+                # Optionally, remove the temporary uploaded file
+                os.remove(video_path)
+
+                @st.experimental_fragment
+                def downloadButton():
+                    st.download_button(
+                        label="Download Video",
+                        data=yolo_data,
+                        file_name=output_filename,
+                        mime="video/mp4",
+                        help="Click to download the video",
+                    )
+
+                    with st.spinner("Waiting for 3 seconds!"):
+                        time.sleep(3)
+
+                downloadButton()
 
 elif option == "Open Webcam":
-    st.text("Press 'Start' to open the webcam")
-    if st.button("Start"):
+    st.text("Press 'Start Webcam' to open the webcam")
+    start_button = st.button("Start Webcam")
+    stop_button = st.empty()  # Initially hide the stop button
+
+    # Placeholder for displaying frames
+    frame_placeholder = st.empty()
+
+    # Flag to track webcam state
+    webcam_running = False
+
+    if start_button:
+        webcam_running = True
+
         cap = cv2.VideoCapture(0)
         cap.set(3, frame_width)
         cap.set(4, frame_height)
 
-        while True:
-            success, frame = cap.read()
+        stop_button = st.button("Stop Webcam")  # Show stop button only after start
 
-            if not success:
-                break
+    while webcam_running and cap.isOpened():
+        success, frame = cap.read()
 
-            frame = processFrame(frame)
+        if not success:
+            st.warning("Failed to capture frame from webcam.")
+            break
 
-            cv2.imshow("Webcam", frame)
+        # Process the frame using your YOLO model
+        frame = processFrame(frame)
 
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
+        # Convert BGR (OpenCV) to RGB for Streamlit display
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        cap.release()
-        cv2.destroyAllWindows()
+        # Display the frame in the browser
+        frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
+
+        # Check if the stop button is pressed
+        if stop_button:
+            webcam_running = False
+            cap.release()
+
+            # Hide stop button and frame placeholder
+            stop_button.text = ""
+            frame_placeholder.empty()
+            break
