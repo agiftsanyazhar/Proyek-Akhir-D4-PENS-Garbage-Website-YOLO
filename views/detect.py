@@ -9,13 +9,11 @@ import time
 import math
 import subprocess
 from ultralytics import YOLO
+import datetime
+import numpy as np
 
 
 def app():
-    # Constants
-    frame_width = 1280
-    frame_height = 720
-
     # Define class names
     classNames = [
         "Others",
@@ -49,7 +47,7 @@ def app():
 
     model = YOLO("garbage.pt")
 
-    def processFrame(frame):
+    def process_frame(frame):
         # Perform object detection
         results = model(frame, stream=True)
 
@@ -83,11 +81,11 @@ def app():
 
         return frame
 
-    detect_image_file, detect_video_file, detect_webcam = st.tabs(
+    detect_image_tab, detect_video_tab, detect_webcam_tab = st.tabs(
         ["Detect from Image File", "Detect from Video File", "Open Webcam"]
     )
 
-    with detect_image_file:
+    with detect_image_tab:
         uploaded_image = st.file_uploader(
             "Upload an image", type=["jpg", "jpeg", "png"]
         )
@@ -108,7 +106,7 @@ def app():
             if st.button(
                 "Start Detection",
                 help="Click to start detection",
-                key=detect_image_file,
+                key=detect_image_tab,
             ):
                 # Show spinner and warning message
                 with st.spinner("Processing detection..."):
@@ -117,7 +115,7 @@ def app():
                     frame_width = frame.shape[1]
                     frame_height = frame.shape[0]
 
-                    processed_frame = processFrame(frame)
+                    processed_frame = process_frame(frame)
 
                     # Save and display processed image
                     output_dir = "output"
@@ -140,11 +138,11 @@ def app():
                         use_column_width=True,
                     )
 
-                    with open(output_image_path, "rb") as f:
-                        yolo_data = f.read()
-
                     # Optionally, remove the temporary uploaded file
                     os.remove(image_path)
+
+                    with open(output_image_path, "rb") as f:
+                        yolo_data = f.read()
 
                     @st.fragment
                     def downloadButton():
@@ -161,7 +159,7 @@ def app():
 
                     downloadButton()
 
-    with detect_video_file:
+    with detect_video_tab:
         uploaded_video = st.file_uploader("Upload a video", type=["mp4"])
 
         if uploaded_video is not None:
@@ -177,7 +175,7 @@ def app():
             if st.button(
                 "Start Detection",
                 help="Click to start detection",
-                key=detect_video_file,
+                key=detect_video_tab,
             ):
                 with st.spinner("Processing detection..."):
                     cap = cv2.VideoCapture(video_path)
@@ -214,7 +212,7 @@ def app():
                             f"Processing frame {frame_count}/{total_frames}"
                         )
 
-                        frame = processFrame(frame)
+                        frame = process_frame(frame)
                         out.write(frame)
 
                     cap.release()
@@ -264,53 +262,123 @@ def app():
 
                     downloadButton()
 
-    with detect_webcam:
-        st.text("Press 'Start Webcam' to open the webcam")
-        start_button = st.button(
-            "Start Webcam",
-            help="Click to start detection",
-        )
-        stop_button = st.empty()  # Initially hide the stop button
+    with detect_webcam_tab:
+        # Dropdown for selecting mode
+        mode = st.selectbox("Select Mode", ["Photo", "Video"])
 
-        # Placeholder for displaying frames
-        frame_placeholder = st.empty()
+        if mode == "Photo":
+            # Capture photo using the camera input
+            enable = st.checkbox("Enable camera")
+            picture = st.camera_input("Take a picture", disabled=not enable)
 
-        # Flag to track webcam state
-        webcam_running = False
+            if picture:
+                # Generate a unique filename with timestamp
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                capture_filename = f"capture_{timestamp}.jpg"
 
-        if start_button:
-            webcam_running = True
+                # Define directories for uploads and output
+                output_dir = "output"
 
-            cap = cv2.VideoCapture(0)
-            cap.set(3, frame_width)
-            cap.set(4, frame_height)
+                # Ensure the directories exist
+                os.makedirs(output_dir, exist_ok=True)
 
-            stop_button = st.button(
-                "Stop Webcam", help="Click to stop detection"
-            )  # Show stop button only after start
+                # Paths for captured and processed images
+                processed_image_path = os.path.join(output_dir, capture_filename)
 
-        while webcam_running and cap.isOpened():
-            success, frame = cap.read()
+                # Display the captured image
+                st.image(picture, caption="Captured Image", use_column_width=True)
 
-            if not success:
-                st.warning("Failed to capture frame from webcam.")
-                break
+                if picture is not None:
+                    bytes_data = picture.getvalue()
 
-            # Process the frame using your YOLO model
-            frame = processFrame(frame)
+                if st.button(
+                    "Start Detection",
+                    help="Click to start detection",
+                    key=detect_image_tab,
+                ):
+                    # Process the captured image
+                    with st.spinner("Processing detection..."):
+                        frame = cv2.imdecode(
+                            np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR
+                        )
+                        processed_frame = process_frame(frame)
 
-            # Convert BGR (OpenCV) to RGB for Streamlit display
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        # Save the processed image to the output folder
+                        cv2.imwrite(processed_image_path, processed_frame)
 
-            # Display the frame in the browser
-            frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
+                        st.success("Image processing completed")
 
-            # Check if the stop button is pressed
-            if stop_button:
-                webcam_running = False
-                cap.release()
+                        # Display the processed image
+                        processed_frame_rgb = cv2.cvtColor(
+                            processed_frame, cv2.COLOR_BGR2RGB
+                        )
+                        st.image(
+                            processed_frame_rgb,
+                            caption="Processed Image",
+                            use_column_width=True,
+                        )
 
-                # Hide stop button and frame placeholder
-                stop_button.text = ""
-                frame_placeholder.empty()
-                break
+                        with open(processed_image_path, "rb") as f:
+                            yolo_data = f.read()
+
+                        @st.fragment
+                        def downloadButton():
+                            st.download_button(
+                                label="Download Image",
+                                data=yolo_data,
+                                file_name=capture_filename,
+                                mime="image/jpeg",
+                                help="Click to download the processed image",
+                            )
+
+                            with st.spinner("Waiting for 3 seconds!"):
+                                time.sleep(3)
+
+                        downloadButton()
+
+        # else:
+        # st.text("Press 'Start Webcam' to open the webcam")
+        # start_button = st.button("Start Webcam", key="start_webcam")
+        # stop_button_placeholder = st.empty()  # Initially hide the stop button
+
+        # # Placeholder for displaying frames
+        # frame_placeholder = st.empty()
+
+        # if start_button:
+        #     # Code for webcam video capture
+        #     webcam_running = True
+        #     cap = cv2.VideoCapture(0)
+        #     cap.set(3, frame_width)
+        #     cap.set(4, frame_height)
+
+        #     stop_button = stop_button_placeholder.button(
+        #         "Stop Webcam", key="stop_webcam"
+        #     )  # Show stop button only after start
+
+        #     while webcam_running and cap.isOpened():
+        #         success, frame = cap.read()
+
+        #         if not success:
+        #             st.warning("Failed to capture frame from webcam.")
+        #             break
+
+        #         # Process the frame using your YOLO model
+        #         frame = process_frame(frame)
+
+        #         # Convert BGR (OpenCV) to RGB for Streamlit display
+        #         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        #         # Display the frame in the browser
+        #         frame_placeholder.image(
+        #             frame_rgb, channels="RGB", use_column_width=True
+        #         )
+
+        #         # Check if the stop button is pressed
+        #         if stop_button:
+        #             webcam_running = False
+        #             cap.release()
+
+        #             # Hide stop button and frame placeholder
+        #             stop_button_placeholder.empty()
+        #             frame_placeholder.empty()
+        #             break
