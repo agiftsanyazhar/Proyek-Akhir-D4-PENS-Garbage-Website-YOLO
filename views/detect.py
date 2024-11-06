@@ -192,7 +192,7 @@ def app():
 
                     out = cv2.VideoWriter(
                         out_path,
-                        cv2.VideoWriter_fourcc(*"mp4v"),
+                        cv2.VideoWriter_fourcc(*"h264"),
                         fps,
                         (frame_width, frame_height),
                     )
@@ -218,29 +218,10 @@ def app():
                     cap.release()
                     out.release()
 
-                    # Convert to H.264 codec using ffmpeg
-                    h264_output_filename = (
-                        os.path.splitext(uploaded_video.name)[0] + "_h264.mp4"
-                    )
-                    h264_out_path = os.path.join(out_dir, h264_output_filename)
-
-                    # Run ffmpeg to re-encode
-                    subprocess.run(
-                        [
-                            "ffmpeg",
-                            "-i",
-                            out_path,
-                            "-vcodec",
-                            "libx264",
-                            "-y",
-                            h264_out_path,
-                        ]
-                    )
-
                     st.success("Video processing completed")
 
                     # Display the processed H.264 video
-                    st.video(h264_out_path)
+                    st.video(out_path)
 
                     # Clean up the temporary files
                     os.remove(video_path)
@@ -264,12 +245,13 @@ def app():
 
     with detect_webcam_tab:
         # Dropdown for selecting mode
-        mode = st.selectbox("Select Mode", ["Photo", "Video"])
+        mode = st.selectbox("Select Mode", ["Photo", "Video", "Live"])
 
         if mode == "Photo":
+            st.subheader("Capture Photo")
             # Capture photo using the camera input
-            enable = st.checkbox("Enable camera")
-            picture = st.camera_input("Take a picture", disabled=not enable)
+            enable = st.checkbox("Enable camera", key="capture_photo_tab")
+            picture = st.camera_input("Take a photo", disabled=not enable)
 
             if picture:
                 # Generate a unique filename with timestamp
@@ -286,7 +268,8 @@ def app():
                 processed_image_path = os.path.join(output_dir, capture_filename)
 
                 # Display the captured image
-                st.image(picture, caption="Captured Image", use_column_width=True)
+                st.success("Photo captured successfully")
+                st.image(picture, caption="Captured Photo", use_column_width=True)
 
                 if picture is not None:
                     bytes_data = picture.getvalue()
@@ -335,6 +318,157 @@ def app():
                                 time.sleep(3)
 
                         downloadButton()
+
+        elif mode == "Video":
+            st.subheader("Record Video")
+            enable = st.checkbox("Enable camera", key="record_video_tab")
+            start_recording = st.button(
+                "Start Recording", disabled=not enable, help="Click to start recording"
+            )
+
+            # Initialize session state for recording
+            if "start_recording" not in st.session_state:
+                st.session_state["start_recording"] = False
+
+            # Generate a unique filename once and store it in session state
+            if "video_filename" not in st.session_state:
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                st.session_state["video_filename"] = f"record_{timestamp}.mp4"
+
+            video_filename = st.session_state["video_filename"]
+
+            # Define directories for uploads and output
+            uploads_dir = "uploads"
+            output_dir = "output"
+            os.makedirs(uploads_dir, exist_ok=True)
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Paths for recorded and processed videos
+            video_path = os.path.join(uploads_dir, video_filename)
+            processed_video_path = os.path.join(output_dir, video_filename)
+
+            video_placeholder = st.empty()
+
+            # Start recording if the button is clicked
+            if start_recording:
+                st.session_state["start_recording"] = True
+
+                # Initialize video capture and writer
+                cap = cv2.VideoCapture(0)
+                frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+                out = cv2.VideoWriter(
+                    video_path,
+                    cv2.VideoWriter_fourcc(*"h264"),
+                    fps,
+                    (frame_width, frame_height),
+                )
+
+                stop_recording = st.button(
+                    "Stop Recording", help="Click to stop recording"
+                )
+
+                # Recording loop
+                while cap.isOpened():
+                    ret, frame = cap.read()
+                    if ret:
+                        out.write(frame)
+                        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                        video_placeholder.image(
+                            frame_rgb, channels="RGB", use_column_width=True
+                        )
+                    else:
+                        break
+
+                    # Stop recording when button is clicked
+                    if stop_recording:
+                        break
+
+                # Release video capture and writer
+                cap.release()
+                out.release()
+                st.session_state["start_recording"] = False
+
+            if "video_recorded" not in st.session_state:
+                st.session_state["video_recorded"] = False
+
+            # Display the recorded video after completion
+            if st.session_state["start_recording"] and os.path.exists(video_path):
+                st.success("Video recording completed")
+
+                with open(video_path, "rb") as f:
+                    f.read()
+                st.video(video_path)
+
+                st.session_state["video_recorded"] = True
+
+            # Start Detection button
+            if st.session_state["video_recorded"] == True and st.button(
+                "Start Detection", help="Click to start detection"
+            ):
+                # Process the recorded video
+                with st.spinner("Processing detection..."):
+                    # Initialize video capture and writer
+                    cap = cv2.VideoCapture(video_path)
+                    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                    fps = int(cap.get(cv2.CAP_PROP_FPS))
+                    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+                    out = cv2.VideoWriter(
+                        processed_video_path,
+                        cv2.VideoWriter_fourcc(*"h264"),
+                        fps,
+                        (frame_width, frame_height),
+                    )
+
+                    frame_count = 0
+                    progress_text = st.empty()
+                    while cap.isOpened():
+                        ret, frame = cap.read()
+                        if not ret:
+                            break
+
+                        frame_count += 1
+
+                        # Update progress text
+                        progress_text.warning(
+                            f"Processing frame {frame_count}/{total_frames}"
+                        )
+
+                        processed_frame = process_frame(
+                            frame
+                        )  # Your detection function
+                        out.write(processed_frame)
+
+                    cap.release()
+                    out.release()
+
+                    st.success("Video processing completed")
+
+                    st.video(processed_video_path)
+
+                    os.remove(video_path)
+
+                    # Provide download button for processed video
+                    with open(processed_video_path, "rb") as f:
+                        yolo_data = f.read()
+
+                    @st.fragment
+                    def downloadButton():
+                        st.download_button(
+                            label="Download Video",
+                            data=yolo_data,
+                            file_name=video_filename,
+                            mime="video/mp4",
+                            help="Click to download the processed video",
+                        )
+                        with st.spinner("Waiting for 3 seconds!"):
+                            time.sleep(3)
+
+                    downloadButton()
 
         # else:
         # st.text("Press 'Start Webcam' to open the webcam")
