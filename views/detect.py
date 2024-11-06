@@ -249,6 +249,7 @@ def app():
 
         if mode == "Photo":
             st.subheader("Capture Photo")
+            st.text("Press 'Enable camera' to take a photo")
             # Capture photo using the camera input
             enable = st.checkbox("Enable camera", key="capture_photo_tab")
             picture = st.camera_input("Take a photo", disabled=not enable)
@@ -321,6 +322,7 @@ def app():
 
         elif mode == "Video":
             st.subheader("Record Video")
+            st.text("Press 'Enable camera' to record a video")
             enable = st.checkbox("Enable camera", key="record_video_tab")
             start_recording = st.button(
                 "Start Recording", disabled=not enable, help="Click to start recording"
@@ -470,49 +472,60 @@ def app():
 
                     downloadButton()
 
-        # else:
-        # st.text("Press 'Start Webcam' to open the webcam")
-        # start_button = st.button("Start Webcam", key="start_webcam")
-        # stop_button_placeholder = st.empty()  # Initially hide the stop button
+        elif mode == "Live":
+            st.subheader("Live Detection")
+            st.text("Press 'Start Webcam' to open the webcam")
+            start_button = st.button(
+                "Start Webcam", key="start_webcam", help="Click to start webcam"
+            )
+            stop_button_placeholder = st.empty()  # Initially hide the stop button
 
-        # # Placeholder for displaying frames
-        # frame_placeholder = st.empty()
+            # Placeholder for displaying frames
+            frame_placeholder = st.empty()
 
-        # if start_button:
-        #     # Code for webcam video capture
-        #     webcam_running = True
-        #     cap = cv2.VideoCapture(0)
-        #     cap.set(3, frame_width)
-        #     cap.set(4, frame_height)
+            # Flag to track webcam state
+            webcam_running = False
 
-        #     stop_button = stop_button_placeholder.button(
-        #         "Stop Webcam", key="stop_webcam"
-        #     )  # Show stop button only after start
+            if start_button:
+                webcam_running = True
 
-        #     while webcam_running and cap.isOpened():
-        #         success, frame = cap.read()
+                # Code for webcam video capture
+                cap = cv2.VideoCapture(0)
+                cap.set(3, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
+                cap.set(4, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+                fps = int(cap.get(cv2.CAP_PROP_FPS))
 
-        #         if not success:
-        #             st.warning("Failed to capture frame from webcam.")
-        #             break
+                stop_button = stop_button_placeholder.button(
+                    "Stop Webcam", key="stop_webcam", help="Click to stop webcam"
+                )  # Show stop button only after start
 
-        #         # Process the frame using your YOLO model
-        #         frame = process_frame(frame)
+                fps_text = st.empty()
+                while webcam_running and cap.isOpened():
+                    success, frame = cap.read()
 
-        #         # Convert BGR (OpenCV) to RGB for Streamlit display
-        #         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    if not success:
+                        st.warning("Failed to capture frame from webcam")
+                        break
 
-        #         # Display the frame in the browser
-        #         frame_placeholder.image(
-        #             frame_rgb, channels="RGB", use_column_width=True
-        #         )
+                    # Process the frame using your YOLO model
+                    frame = process_frame(frame)
 
-        #         # Check if the stop button is pressed
-        #         if stop_button:
-        #             webcam_running = False
-        #             cap.release()
+                    # Convert BGR (OpenCV) to RGB for Streamlit display
+                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-        #             # Hide stop button and frame placeholder
-        #             stop_button_placeholder.empty()
-        #             frame_placeholder.empty()
-        #             break
+                    # Display the frame in the browser
+                    frame_placeholder.image(
+                        frame_rgb, channels="RGB", use_column_width=True
+                    )
+
+                    fps_text.warning(f"FPS: {fps:.2f}")
+
+                    # Check if the stop button is pressed
+                    if stop_button:
+                        webcam_running = False
+                        cap.release()
+
+                        # Hide stop button and frame placeholder
+                        stop_button_placeholder.empty()
+                        frame_placeholder.empty()
+                        break
