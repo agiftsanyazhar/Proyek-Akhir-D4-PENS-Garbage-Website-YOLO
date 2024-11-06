@@ -7,5 +7,5 @@ protobuf==3.20.0
 opencv-python==4.10.0.82
 opencv-python-headless==4.10.0.82
 ultralytics==8.2.48
-streamlit
+streamlit==1.39.0
 ffmpeg-python

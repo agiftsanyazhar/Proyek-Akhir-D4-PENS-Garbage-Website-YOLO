@@ -2,6 +2,7 @@ import os
 import cv2
 import streamlit as st
 import time
+import tempfile
 import math
 from ultralytics import YOLO
 import datetime
@@ -65,36 +66,53 @@ def app():
     def handle_uploaded_file(uploaded_file, file_type, process_func, mime_type):
         uploads_dir = os.path.join("uploads")
         os.makedirs(uploads_dir, exist_ok=True)
-        file_path = os.path.join(uploads_dir, uploaded_file.name)
-        with open(file_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+
+        # Check if the uploaded_file has a 'name' attribute, otherwise create a temporary filename
+        if hasattr(uploaded_file, "name"):
+            file_name = uploaded_file.name
+            file_data = uploaded_file.getbuffer()
+            file_path = os.path.join(uploads_dir, file_name)
+            with open(file_path, "wb") as f:
+                f.write(file_data)
+        else:
+            file_name = f"capture_{datetime.datetime.now().strftime('%Y%m%d')}.jpg"
+            file_path = os.path.join(uploads_dir, file_name)
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file)
 
         if file_type == "image":
             st.image(file_path, caption="Uploaded Image", use_column_width=True)
         elif file_type == "video":
             st.video(file_path)
 
-        if st.button("Start Detection", key=f"{file_type}_tab"):
+        unique_key = f"{file_name}"
+        if f"{unique_key}_clicked" not in st.session_state:
+            st.session_state[f"{unique_key}_clicked"] = False
+
+        if (
+            st.button("Start Detection", key=unique_key)
+            or st.session_state[f"{unique_key}_clicked"]
+        ):
+            st.session_state[f"{unique_key}_clicked"] = True
             with st.spinner("Processing detection..."):
-                processed_data = process_func(file_path)
+                if file_type == "image" and isinstance(uploaded_file, bytes):
+                    processed_data = process_func(uploaded_file)
+                else:
+                    processed_data = process_func(file_path)
                 output_dir = "output"
                 os.makedirs(output_dir, exist_ok=True)
-                output_path = os.path.join(output_dir, uploaded_file.name)
-                (
-                    cv2.imwrite(output_path, processed_data)
-                    if file_type == "image"
-                    else None
-                )
+                output_path = os.path.join(output_dir, file_name)
 
                 if file_type == "image":
+                    cv2.imwrite(output_path, processed_data)
                     processed_data_rgb = cv2.cvtColor(processed_data, cv2.COLOR_BGR2RGB)
 
                 st.success(f"{file_type.capitalize()} processing completed")
-                (
+
+                if file_type == "image":
                     st.image(processed_data_rgb, use_column_width=True)
-                    if file_type == "image"
-                    else st.video(output_path)
-                )
+                else:
+                    st.video(output_path)
 
                 os.remove(file_path)
 
@@ -106,7 +124,7 @@ def app():
                     st.download_button(
                         "Download",
                         yolo_data,
-                        file_name=uploaded_file.name,
+                        file_name=file_name,
                         mime=mime_type,
                     )
 
@@ -202,10 +220,11 @@ def app():
             enable = st.checkbox("Enable camera", key="capture_photo_tab")
             picture = st.camera_input("Take a photo", disabled=not enable)
             if picture:
+                image_data = picture.getvalue()
                 process_func = lambda data: process_frame(
                     cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
                 )
-                handle_uploaded_file(picture, "image", process_func, "image/jpeg")
+                handle_uploaded_file(image_data, "image", process_func, "image/jpeg")
 
         elif mode == "Video":
             st.subheader("Record Video")
