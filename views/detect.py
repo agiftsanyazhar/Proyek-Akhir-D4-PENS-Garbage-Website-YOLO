@@ -7,7 +7,6 @@ import cv2
 import streamlit as st
 import time
 import math
-import subprocess
 from ultralytics import YOLO
 import datetime
 import numpy as np
