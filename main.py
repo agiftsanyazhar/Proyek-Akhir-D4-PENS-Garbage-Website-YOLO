@@ -1,6 +1,6 @@
 import streamlit as st
-import detect as detect  # Import Detect page
-import event as event  # Import Events page
+import detect
+import event
 
 # Streamlit configuration
 st.set_page_config(
