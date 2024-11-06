@@ -191,7 +191,7 @@ def app():
 
                     out = cv2.VideoWriter(
                         out_path,
-                        cv2.VideoWriter_fourcc(*"h264"),
+                        cv2.VideoWriter_fourcc(*"VP80"),
                         fps,
                         (frame_width, frame_height),
                     )
@@ -362,7 +362,7 @@ def app():
 
                 out = cv2.VideoWriter(
                     video_path,
-                    cv2.VideoWriter_fourcc(*"h264"),
+                    cv2.VideoWriter_fourcc(*"VP80"),
                     fps,
                     (frame_width, frame_height),
                 )
@@ -420,7 +420,7 @@ def app():
 
                     out = cv2.VideoWriter(
                         processed_video_path,
-                        cv2.VideoWriter_fourcc(*"h264"),
+                        cv2.VideoWriter_fourcc(*"VP80"),
                         fps,
                         (frame_width, frame_height),
                     )
