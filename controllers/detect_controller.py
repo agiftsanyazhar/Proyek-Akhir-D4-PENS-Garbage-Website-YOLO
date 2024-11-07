@@ -193,8 +193,7 @@ def record_video():
             fps,
             (frame_width, frame_height),
         )
-        st.info("Recording video...")
-        st.info("Press 'Stop' to end recording")
+        st.info("Recording video... Press 'Stop' to end recording")
         stop_recording = st.button("Stop Recording")
         while cap.isOpened():
             ret, frame = cap.read()
