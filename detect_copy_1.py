@@ -1,8 +1,6 @@
 import os
 import cv2
 import streamlit as st
-import time
-import tempfile
 import math
 from ultralytics import YOLO
 import datetime
@@ -10,7 +8,6 @@ import numpy as np
 
 
 def app():
-    # Define class names and colors
     classNames = [
         "Others",
         "Plastic",
@@ -23,6 +20,7 @@ def app():
         "Carton",
         "Food Container",
     ]
+
     class_colors = {
         "Others": (255, 0, 0),
         "Plastic": (255, 0, 128),
@@ -35,17 +33,19 @@ def app():
         "Carton": (255, 255, 0),
         "Food Container": (255, 128, 0),
     }
+
     model = YOLO("garbage.pt")
 
-    st.title("Application for Detecting Littering Actions using YOLO - Detect")
-
+    # Define function for detecting objects in a frame
     def process_frame(frame):
         results = model(frame, stream=True)
+
         for r in results:
             for box in r.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
                 conf = math.ceil((box.conf[0] * 100)) / 100
                 cls = int(box.cls[0])
+
                 if cls < len(classNames):
                     currentClass = classNames[cls]
                     color = class_colors[currentClass]
@@ -59,10 +59,12 @@ def app():
                         color,
                         2,
                     )
-                else:
-                    print(f"Warning: Class index {cls} is out of range")
         return frame
 
+    # =================================
+    # Static Image or Video Detection
+    # =================================
+    # Define function for uploaded image from file
     def handle_uploaded_file(uploaded_file, file_type, process_func, mime_type):
         uploads_dir = os.path.join("uploads")
         os.makedirs(uploads_dir, exist_ok=True)
@@ -91,7 +93,7 @@ def app():
 
         if (
             st.button("Start Detection", key=unique_key)
-            or st.session_state[f"{unique_key}_clicked"]
+            and st.session_state[f"{unique_key}_clicked"]
         ):
             st.session_state[f"{unique_key}_clicked"] = True
             with st.spinner("Processing detection..."):
@@ -130,6 +132,7 @@ def app():
 
                 download_button()
 
+    # Define function for uploaded video from file
     def process_video(video_path):
         cap = cv2.VideoCapture(video_path)
         frame_width, frame_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
@@ -137,58 +140,131 @@ def app():
         )
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
         out_path = os.path.join("output", os.path.basename(video_path))
         out = cv2.VideoWriter(
             out_path, cv2.VideoWriter_fourcc(*"H264"), fps, (frame_width, frame_height)
         )
+
         frames_processed = 0
         progress_text = st.empty()
         while cap.isOpened():
             success, frame = cap.read()
             if not success:
                 break
+
             frames_processed += 1
             progress_text.warning(f"Processing frame {frames_processed}/{total_frames}")
+
             out.write(process_frame(frame))
+
         cap.release()
         out.release()
+
         return out_path
 
+    # =================================
+    # Dynamic Image or Video Detection
+    # =================================
+    # Define function for recorded video from camera
     def record_video():
-        cap = cv2.VideoCapture(0)
-        frame_width, frame_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
-            cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-        )
-        fps = int(cap.get(cv2.CAP_PROP_FPS))
-        video_filename = (
-            f"record_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
-        )
-        video_path = os.path.join("uploads", video_filename)
-        out = cv2.VideoWriter(
-            video_path,
-            cv2.VideoWriter_fourcc(*"H264"),
-            fps,
-            (frame_width, frame_height),
-        )
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-            out.write(frame)
-        cap.release()
-        out.release()
-        st.success("Video recording completed")
-        st.video(video_path)
+        start_recording = st.button("Start Recording", disabled=not enable)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
+        # Generate a unique filename once and store it in session state
+        if "video_filename" not in st.session_state:
+            st.session_state["video_filename"] = f"record_{timestamp}.mp4"
+
+        video_filename = st.session_state["video_filename"]
+        video_path = os.path.join("uploads", video_filename)
+        out_path = os.path.join("output", os.path.basename(video_path))
+
+        if start_recording:
+            cap = cv2.VideoCapture(0)
+            frame_width, frame_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(
+                cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            )
+            fps = (
+                int(cap.get(cv2.CAP_PROP_FPS)) if cap.get(cv2.CAP_PROP_FPS) > 0 else 30
+            )
+
+            out = cv2.VideoWriter(
+                video_path,
+                cv2.VideoWriter_fourcc(*"H264"),
+                fps,
+                (frame_width, frame_height),
+            )
+
+            video_placeholder = st.empty()
+            stop_recording = st.button("Stop Recording")
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret or stop_recording:
+                    break
+
+                out.write(frame)
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                video_placeholder.image(
+                    frame_rgb, channels="RGB", use_column_width=True
+                )
+
+            cap.release()
+            out.release()
+
+        if os.path.exists(video_path):
+            st.success("Video recording completed")
+            st.video(video_path)
+            process_video(video_path)
+
+            st.video(out_path)
+
+            os.remove(video_path)
+
+            with open(out_path, "rb") as f:
+                yolo_data = f.read()
+
+            @st.fragment
+            def download_button():
+                st.download_button(
+                    "Download",
+                    yolo_data,
+                    file_name=video_filename,
+                    mime="video/mp4",
+                )
+
+            download_button()
+
+    # Define function for live video detection from camera
     def live_detection():
         cap = cv2.VideoCapture(0)
-        while cap.isOpened():
+        cap.set(3, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
+        cap.set(4, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+        webcam_running = True
+        frame_placeholder = st.empty()
+        fps_text = st.empty()
+        stop_button = st.button("Stop")
+        while webcam_running and cap.isOpened():
             success, frame = cap.read()
             if not success:
                 break
+
             frame = process_frame(frame)
-            st.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), use_column_width=True)
-        cap.release()
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
+
+            fps_text.warning(f"FPS: {fps:.2f}")
+
+            if stop_button:
+                webcam_running = False
+                cap.release()
+                stop_button.empty()
+                frame_placeholder.empty()
+
+                break
+
+    st.title("Application for Detecting Littering Actions using YOLO - Detect")
 
     detect_image_tab, detect_video_tab, detect_webcam_tab = st.tabs(
         ["Detect from Image File", "Detect from Video File", "Open Webcam"]
@@ -229,9 +305,7 @@ def app():
         elif mode == "Video":
             st.subheader("Record Video")
             enable = st.checkbox("Enable camera", key="record_video_tab")
-            start_recording = st.button("Start Recording", disabled=not enable)
-            if start_recording:
-                record_video()
+            record_video()
 
         elif mode == "Live":
             st.subheader("Live Detection")
