@@ -2,10 +2,11 @@ import os
 import cv2
 import streamlit as st
 import math
-from ultralytics import YOLO
 import datetime
+import controllers.event_controller as ec
+from ultralytics import YOLO
 
-classNames = [
+class_names = [
     "Others",
     "Plastic",
     "Straw",
@@ -35,24 +36,31 @@ model = YOLO("garbage.pt")
 # Define function for detecting objects in a frame
 def process_frame(frame):
     results = model(frame, stream=True)
-    for r in results:
-        for box in r.boxes:
+    detected_objects = []
+    for result in results:
+        for box in result.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             conf = math.ceil((box.conf[0] * 100)) / 100
             cls = int(box.cls[0])
-            if cls < len(classNames):
-                currentClass = classNames[cls]
-                color = class_colors[currentClass]
+            if cls < len(class_names):
+                current_class = class_names[cls]
+                detected_objects.append(current_class)
+                color = class_colors[current_class]
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 cv2.putText(
                     frame,
-                    f"{currentClass} {conf}",
+                    f"{current_class} {conf}",
                     (max(0, x1), max(35, y1)),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
                     color,
                     2,
                 )
+
+    # Save detected image and log to database if objects are detected
+    if detected_objects:
+        file_path = ec.save_detected_image(frame)
+        ec.log_event_to_db(file_path, detected_objects)
     return frame
 
 
@@ -153,9 +161,6 @@ def process_video(video_path):
         progress_text.warning(f"Processing frame {frames_processed}/{total_frames}")
         out.write(process_frame(frame))
     cap.release()
-    out.release()
-
-    return out_path
 
 
 # =================================
@@ -193,7 +198,8 @@ def record_video():
             fps,
             (frame_width, frame_height),
         )
-        st.info("Recording video... Press 'Stop' to end recording")
+        st.info("Recording video...")
+        st.info("Press 'Stop Recording' to end recording")
         stop_recording = st.button("Stop Recording")
         while cap.isOpened():
             ret, frame = cap.read()

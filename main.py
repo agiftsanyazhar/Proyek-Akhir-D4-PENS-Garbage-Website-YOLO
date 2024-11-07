@@ -12,14 +12,11 @@ st.set_page_config(
     page_icon=":wastebasket:",
 )
 
-# Sidebar Title
 st.sidebar.title("Dashboard")
 
-# Sidebar Page Navigation
 page = st.sidebar.selectbox("Select Page", ["Detect", "Events"])
 
-# Load the selected page content
-if page == "Detect":
-    dv.app()  # Run the detect page content
+if page is None or page == "Detect":
+    dv.app()
 elif page == "Events":
-    ev.app()  # Run the events page content
+    ev.app()
