@@ -25,7 +25,7 @@ def app():
             "id": "#",
             "file_path": "Image",
             "detected_object": "Detected Object",
-            "created_at": "Timestamp",
+            "created_at": "Date",
         },
         inplace=True,
     )
@@ -70,7 +70,7 @@ def app():
 
         with cols[1]:
             st.write("**Detected Objects:**", ", ".join(row["Detected Object"]))
-            st.write("**Timestamp:**", row["Timestamp"])
+            st.write("**Date:**", row["Date"])
 
         st.write("---")
 

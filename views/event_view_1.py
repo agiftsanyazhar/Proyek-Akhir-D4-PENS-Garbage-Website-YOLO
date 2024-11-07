@@ -15,7 +15,7 @@ def app():
             "id": "#",
             "file_path": "Image",
             "detected_object": "Detected Object",
-            "created_at": "Timestamp",
+            "created_at": "Date",
         },
         inplace=True,
     )
@@ -23,12 +23,12 @@ def app():
         lambda x: list(set(eval(x)))
     )
     st.dataframe(
-        events_df[["#", "Image", "Detected Object", "Timestamp"]],
+        events_df[["#", "Image", "Detected Object", "Date"]],
         column_config={
             "#": "#",
             "Image": "Image",
             "Detected Object": "Detected Objects",
-            "Timestamp": "Timestamp",
+            "Date": "Date",
         },
         hide_index=True,
     )
