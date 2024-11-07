@@ -5,7 +5,6 @@ import controllers.detect_controller as dc
 
 
 def app():
-
     st.title("Application for Detecting Littering Actions using YOLO - Detect")
 
     detect_image_tab, detect_video_tab, detect_webcam_tab = st.tabs(
@@ -17,22 +16,14 @@ def app():
             "Upload an image", type=["jpg", "jpeg", "png"]
         )
         if uploaded_image:
-            dc.handle_uploaded_file(
-                uploaded_image,
-                "image",
-                lambda path: dc.process_frame(cv2.imread(path)),
-                "image/jpeg",
-            )
+            process_func = lambda path: dc.process_frame(cv2.imread(path))
+            dc.handle_uploaded_file(uploaded_image, "image", process_func, "image/jpeg")
 
     with detect_video_tab:
         uploaded_video = st.file_uploader("Upload a video", type=["mp4"])
         if uploaded_video:
-            dc.handle_uploaded_file(
-                uploaded_video,
-                "video",
-                lambda path: dc.process_video(path),
-                "video/mp4",
-            )
+            process_func = lambda path: dc.process_video(path)
+            dc.handle_uploaded_file(uploaded_video, "video", process_func, "video/mp4")
 
     with detect_webcam_tab:
         mode = st.selectbox("Select Mode", ["Photo", "Video", "Live"])
@@ -50,7 +41,8 @@ def app():
         elif mode == "Video":
             st.subheader("Record Video")
             enable = st.checkbox("Enable camera", key="record_video_tab")
-            dc.record_video()
+            if enable:
+                dc.record_video()
 
         elif mode == "Live":
             st.subheader("Live Detection")
