@@ -3,8 +3,8 @@
 # =========================
 
 import streamlit as st
-import detect_copy_1
-import event
+import views.detect_view as dv
+import views.event_view as ev
 
 # Streamlit configuration
 st.set_page_config(
@@ -20,6 +20,6 @@ page = st.sidebar.selectbox("Select Page", ["Detect", "Events"])
 
 # Load the selected page content
 if page == "Detect":
-    detect_copy_1.app()  # Run the detect page content
+    dv.app()  # Run the detect page content
 elif page == "Events":
-    event.app()  # Run the events page content
+    ev.app()  # Run the events page content
