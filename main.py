@@ -4,7 +4,8 @@
 
 import streamlit as st
 import views.detect_view as dv
-import views.event_view as ev
+import views.event_view_1 as ev1
+import views.event_view_2 as ev2
 
 # Streamlit configuration
 st.set_page_config(
@@ -14,9 +15,11 @@ st.set_page_config(
 
 st.sidebar.title("Dashboard")
 
-page = st.sidebar.selectbox("Select Page", ["Detect", "Events"])
+page = st.sidebar.selectbox("Select Page", ["Detect", "Events (1)", "Events (2)"])
 
 if page is None or page == "Detect":
     dv.app()
-elif page == "Events":
-    ev.app()
+elif page == "Events (1)":
+    ev1.app()
+elif page == "Events (2)":
+    ev2.app()

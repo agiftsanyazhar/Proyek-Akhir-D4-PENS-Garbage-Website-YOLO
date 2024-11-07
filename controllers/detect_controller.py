@@ -57,7 +57,6 @@ def process_frame(frame):
                     2,
                 )
 
-    # Save detected image and log to database if objects are detected
     if detected_objects:
         file_path = ec.save_detected_image(frame)
         ec.log_event_to_db(file_path, detected_objects)

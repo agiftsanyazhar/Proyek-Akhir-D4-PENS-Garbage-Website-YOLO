@@ -34,16 +34,11 @@ def log_event_to_db(file_path, detected_object):
     timestamp = datetime.datetime.now()
     connection = cn.get_db_connection()
     cursor = connection.cursor()
-
-    # Convert detected_object to JSON format
     detected_object_json = json.dumps(detected_object)
-
-    # Insert file_path, detected_object, and timestamp into the events table
     cursor.execute(
         "INSERT INTO events (file_path, detected_object, created_at) VALUES (%s, %s, %s)",
         (file_path, detected_object_json, timestamp),
     )
-
     connection.commit()
     cursor.close()
     connection.close()
