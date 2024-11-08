@@ -190,7 +190,7 @@ def record_video():
         cap = cv2.VideoCapture(0)
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = int(cap.get(cv2.CAP_PROP_FPS)) if cap.get(cv2.CAP_PROP_FPS) > 0 else 30
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
         out = cv2.VideoWriter(
             video_path,
             cv2.VideoWriter_fourcc(*"H264"),

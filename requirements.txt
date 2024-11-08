@@ -8,5 +8,5 @@ opencv-python==4.10.0.82
 opencv-python-headless==4.10.0.82
 ultralytics==8.2.48
 streamlit==1.39.0
-ffmpeg-python # Install this if you want to deploy to Streamlit Sharing
+ffmpeg-python
 mysql-connector-python
