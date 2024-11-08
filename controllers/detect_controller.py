@@ -247,7 +247,7 @@ def live_detection():
     webcam_running = True
     frame_placeholder = st.empty()
     fps_text = st.empty()
-    stop_button = st.button("Stop")
+    stop_button = st.button("Stop Webcam")
     while webcam_running and cap.isOpened():
         success, frame = cap.read()
         if not success:

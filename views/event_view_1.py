@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def app():
-    st.title("Application for Detecting Littering Actions using YOLO - Events")
+    st.title("Application for Detecting Littering Actions using YOLO - Events (1)")
     events = ec.index()
     events_df = pd.DataFrame(
         events, columns=["id", "file_path", "detected_object", "created_at"]
