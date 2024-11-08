@@ -38,15 +38,19 @@ model = YOLO("garbage.pt")
 def process_frame(frame):
     results = model(frame, stream=True)
     detected_objects = []
+
     for result in results:
+
         for box in result.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
             conf = math.ceil((box.conf[0] * 100)) / 100
             cls = int(box.cls[0])
+
             if cls < len(class_names):
                 current_class = class_names[cls]
                 detected_objects.append(current_class)
                 color = class_colors[current_class]
+
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 cv2.putText(
                     frame,
@@ -61,6 +65,7 @@ def process_frame(frame):
     if detected_objects:
         file_path = ec.save_detected_image(frame)
         ec.log_event_to_db(file_path, detected_objects)
+
     return frame
 
 
@@ -100,17 +105,18 @@ def handle_uploaded_file(uploaded_file, file_type, process_func, mime_type):
         or st.session_state[f"{unique_key}_clicked"]
     ):
         st.session_state[f"{unique_key}_clicked"] = True
+
         with st.spinner("Processing detection..."):
             if file_type == "image" and isinstance(uploaded_file, bytes):
                 processed_data = process_func(uploaded_file)
             else:
                 processed_data = process_func(file_path)
+
             output_dir = "output"
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, file_name)
 
             st.success(f"{file_type.capitalize()} processing completed")
-
             if file_type == "image":
                 cv2.imwrite(output_path, processed_data)
                 processed_data_rgb = cv2.cvtColor(processed_data, cv2.COLOR_BGR2RGB)
@@ -155,11 +161,14 @@ def process_video(video_path):
     progress_text = st.empty()
     while cap.isOpened():
         success, frame = cap.read()
+
         if not success:
             break
+
         frames_processed += 1
-        progress_text.warning(f"Processing frame {frames_processed}/{total_frames}")
+        progress_text.info(f"Processing frame {frames_processed}/{total_frames}")
         out.write(process_frame(frame))
+
     cap.release()
 
 
@@ -169,8 +178,6 @@ def process_video(video_path):
 # Define function for recorded video from camera
 def record_video():
     start_recording = st.button("Start Recording")
-    if "recording" not in st.session_state:
-        st.session_state["recording"] = False
 
     if "video_filename" not in st.session_state:
         timestamp = datetime.datetime.now().strftime("%Y%m%d")
@@ -185,13 +192,12 @@ def record_video():
     processed_video_path = os.path.join(output_dir, video_filename)
 
     video_placeholder = st.empty()
-
     if start_recording:
-        st.session_state["recording"] = True
         cap = cv2.VideoCapture(0)
         frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = int(cap.get(cv2.CAP_PROP_FPS))
+
         out = cv2.VideoWriter(
             video_path,
             cv2.VideoWriter_fourcc(*"H264"),
@@ -200,24 +206,28 @@ def record_video():
         )
         st.info("Recording video...")
         st.info("Press 'Stop Recording' to end recording")
+
         stop_recording = st.button("Stop Recording")
+
         while cap.isOpened():
             ret, frame = cap.read()
+
             if not ret or stop_recording:
                 break
-            out.write(frame)
+
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             video_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
+            out.write(frame)
+
         cap.release()
         out.release()
-        st.session_state["recording"] = False
 
     if os.path.exists(video_path):
         st.success("Video recording completed")
+
         with open(video_path, "rb") as f:
             f.read()
         st.video(video_path)
-
         process_video(video_path)
 
         st.video(processed_video_path)
@@ -232,7 +242,7 @@ def record_video():
             st.download_button(
                 "Download",
                 yolo_data,
-                file_name=st.session_state.video_filename,
+                file_name=st.session_state["video_filename"],
                 mime="video/mp4",
             )
 
@@ -244,6 +254,7 @@ def live_detection():
     cap = cv2.VideoCapture(0)
     cap.set(3, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
     cap.set(4, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+
     pTime = 0
     webcam_running = True
     frame_placeholder = st.empty()
@@ -251,18 +262,23 @@ def live_detection():
     stop_button = st.button("Stop Webcam")
     while webcam_running and cap.isOpened():
         success, frame = cap.read()
+
         if not success:
             break
+
         frame = process_frame(frame)
         cTime = time.time()
         fps = 1 / (cTime - pTime)
         pTime = cTime
+
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
-        fps_text.warning(f"FPS: {fps:.2f}")
+        fps_text.info(f"FPS: {fps:.2f}")
+
         if stop_button:
             webcam_running = False
             cap.release()
             stop_button.empty()
             frame_placeholder.empty()
+
             break

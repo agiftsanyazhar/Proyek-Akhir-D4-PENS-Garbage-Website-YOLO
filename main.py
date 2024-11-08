@@ -14,7 +14,6 @@ st.set_page_config(
 )
 
 st.sidebar.title("Dashboard")
-
 page = st.sidebar.selectbox("Select Page", ["Detect", "Events (1)", "Events (2)"])
 
 if page is None or page == "Detect":

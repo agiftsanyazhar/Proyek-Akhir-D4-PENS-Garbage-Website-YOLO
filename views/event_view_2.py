@@ -19,7 +19,7 @@ def app():
     events_df = pd.DataFrame(
         events, columns=["id", "file_path", "detected_object", "created_at"]
     )
-    events_df["id"] = range(1, len(events_df) + 1)
+
     events_df.rename(
         columns={
             "id": "#",
@@ -29,6 +29,7 @@ def app():
         },
         inplace=True,
     )
+    events_df["id"] = range(1, len(events_df) + 1)
     events_df["Detected Object"] = events_df["Detected Object"].apply(
         lambda x: list(set(eval(x)))
     )
@@ -45,28 +46,28 @@ def app():
     with col1:
         if current_page > 1:
             if st.button("First", key="first_top"):
-                st.session_state.current_page = 1
+                st.session_state["current_page"] = 1
                 st.rerun()
     with col2:
         if current_page > 1:
             if st.button("Previous", key="previous_top"):
-                st.session_state.current_page = current_page - 1
+                st.session_state["current_page"] = current_page - 1
                 st.rerun()
     with col3:
         if current_page < total_pages:
             if st.button("Next", key="next_top"):
-                st.session_state.current_page = current_page + 1
+                st.session_state["current_page"] = current_page + 1
                 st.rerun()
     with col4:
         if current_page < total_pages:
             if st.button("Last", key="last_top"):
-                st.session_state.current_page = total_pages
+                st.session_state["current_page"] = total_pages
                 st.rerun()
 
     for index, row in events_page.iterrows():
         st.write(f"#### Event {row['#']}")
-        cols = st.columns([1, 4])
 
+        cols = st.columns([1, 4])
         with cols[0]:
             try:
                 img = Image.open(row["Image"])
@@ -101,21 +102,21 @@ def app():
     with col1:
         if current_page > 1:
             if st.button("First", key="first_bottom"):
-                st.session_state.current_page = 1
+                st.session_state["current_page"] = 1
                 st.rerun()
     with col2:
         if current_page > 1:
             if st.button("Previous", key="previous_bottom"):
-                st.session_state.current_page = current_page - 1
+                st.session_state["current_page"] = current_page - 1
                 st.rerun()
     with col3:
         if current_page < total_pages:
             if st.button("Next", key="next_bottom"):
-                st.session_state.current_page = current_page + 1
+                st.session_state["current_page"] = current_page + 1
                 st.rerun()
     with col4:
         if current_page < total_pages:
             if st.button("Last", key="last_bottom"):
-                st.session_state.current_page = total_pages
+                st.session_state["current_page"] = total_pages
                 st.rerun()
     st.write(f"Page {current_page} of {total_pages}")

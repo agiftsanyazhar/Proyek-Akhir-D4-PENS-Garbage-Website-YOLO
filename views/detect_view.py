@@ -27,6 +27,7 @@ def app():
 
     with detect_webcam_tab:
         mode = st.selectbox("Select Mode", ["Photo", "Video", "Live"])
+
         if mode == "Photo":
             st.subheader("Capture Photo")
             enable = st.checkbox("Enable camera", key="capture_photo_tab")
