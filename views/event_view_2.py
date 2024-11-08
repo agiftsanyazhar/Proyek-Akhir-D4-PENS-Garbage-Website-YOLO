@@ -65,7 +65,7 @@ def app():
 
     for index, row in events_page.iterrows():
         st.write(f"#### Event {row['#']}")
-        cols = st.columns([1, 3])
+        cols = st.columns([1, 4])
 
         with cols[0]:
             try:
