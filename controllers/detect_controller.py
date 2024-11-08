@@ -4,6 +4,7 @@ import streamlit as st
 import math
 import datetime
 import controllers.event_controller as ec
+import time
 from ultralytics import YOLO
 
 class_names = [
@@ -243,7 +244,7 @@ def live_detection():
     cap = cv2.VideoCapture(0)
     cap.set(3, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
     cap.set(4, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    pTime = 0
     webcam_running = True
     frame_placeholder = st.empty()
     fps_text = st.empty()
@@ -253,6 +254,9 @@ def live_detection():
         if not success:
             break
         frame = process_frame(frame)
+        cTime = time.time()
+        fps = 1 / (cTime - pTime)
+        pTime = cTime
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_placeholder.image(frame_rgb, channels="RGB", use_column_width=True)
         fps_text.warning(f"FPS: {fps:.2f}")
