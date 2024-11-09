@@ -5,8 +5,9 @@ import math
 import datetime
 import controllers.event_controller as ec
 import time
+import ffmpeg
+import re
 from ultralytics import YOLO
-from pygrabber.dshow_graph import FilterGraph
 
 class_names = [
     "Others",
@@ -104,6 +105,20 @@ def camera_preview(type=None):
         cap.release()
 
     return selected_camera
+
+
+def check_cctv_connection(url):
+    try:
+        ffmpeg.probe(url)
+    except ffmpeg.Error as e:
+        error_msg = e.stderr.decode()
+        match = re.search(r"method DESCRIBE failed: \d{3} (.+)", error_msg)
+        if match:
+            short_error_msg = match.group(1)
+        else:
+            short_error_msg = "Please check the URL or credentials"
+        st.error(f"Failed to connect to CCTV: {short_error_msg}")
+        return
 
 
 # Define function for detecting objects in a frame
@@ -358,15 +373,64 @@ def live_detection():
             pTime = cTime
 
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_placeholder.image(frame_rgb, caption="Live Feed", channels="RGB", use_column_width=True)
+            frame_placeholder.image(
+                frame_rgb, caption="Live Feed", channels="RGB", use_column_width=True
+            )
             fps_text.info(f"FPS: {fps:.2f}")
 
             if stop_button:
                 webcam_running = False
                 st.session_state["start_detection"] = False
-                cap.release()
                 info_message.empty()
                 stop_button_placeholder.empty()
                 frame_placeholder.empty()
                 fps_text.empty()
                 break
+        cap.release()
+
+
+def cctv_detection(url):
+    info_message = st.info("Connecting to CCTV...")
+
+    check_cctv_connection(url)
+
+    cap = cv2.VideoCapture(url)
+    cap.set(3, int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
+    cap.set(4, int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+
+    pTime = 0
+    webcam_running = True
+
+    frame_placeholder = st.empty()
+    fps_text = st.empty()
+    stop_button_placeholder = st.empty()
+    stop_button = stop_button_placeholder.button("Stop CCTV")
+
+    while webcam_running and cap.isOpened():
+        success, frame = cap.read()
+
+        if not success:
+            st.error("Lost connection to the CCTV feed")
+            break
+
+        frame = process_frame(frame)
+
+        cTime = time.time()
+        fps = 1 / (cTime - pTime)
+        pTime = cTime
+
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_placeholder.image(
+            frame_rgb, caption="Live Feed", channels="RGB", use_column_width=True
+        )
+        fps_text.info(f"FPS: {fps:.2f}")
+
+        if stop_button:
+            webcam_running = False
+            st.session_state["start_detection"] = False
+            info_message.empty()
+            stop_button_placeholder.empty()
+            frame_placeholder.empty()
+            fps_text.empty()
+            break
+    cap.release()

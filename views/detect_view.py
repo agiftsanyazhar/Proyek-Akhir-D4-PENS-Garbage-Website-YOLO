@@ -49,4 +49,13 @@ def app():
 
     with detect_cctv_tab:
         st.subheader("Open CCTV")
-        st.video("https://youtu.be/7f4bXn0eCqg")
+        st.write("Please fill in the form to start CCTV")
+        form = st.form(key="open_cctv_form")
+        url = form.text_input(
+            "Enter a Network URL",
+            value="rtsp://<username>:<password>@<ip>:<port>",
+        )
+        form.caption("Example: rtsp://admin:12345678@127.0.0.1:8080")
+        submit = form.form_submit_button("Start CCTV")
+        if submit:
+            dc.cctv_detection(url)
