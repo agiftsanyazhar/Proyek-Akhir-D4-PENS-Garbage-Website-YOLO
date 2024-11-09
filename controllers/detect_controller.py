@@ -108,17 +108,22 @@ def camera_preview(type=None):
 
 
 def check_cctv_connection(url):
-    try:
-        ffmpeg.probe(url)
-    except ffmpeg.Error as e:
-        error_msg = e.stderr.decode()
-        match = re.search(r"method DESCRIBE failed: \d{3} (.+)", error_msg)
-        if match:
-            short_error_msg = match.group(1)
-        else:
-            short_error_msg = "Please check the URL or credentials"
-        st.error(f"Failed to connect to CCTV: {short_error_msg}")
-        return
+    start_time = time.time()
+    while time.time() - start_time < 30:
+        try:
+            ffmpeg.probe(url)
+            st.success("CCTV connected successfully")
+            return
+        except ffmpeg.Error as e:
+            error_msg = e.stderr.decode()
+            match = re.search(r"method DESCRIBE failed: \d{3} (.+)", error_msg)
+            if match:
+                short_error_msg = match.group(1)
+            else:
+                short_error_msg = "Please check the URL or credentials"
+            st.error(f"Failed to connect to CCTV: {short_error_msg}")
+            time.sleep(5)
+    st.error("Connection attempt timed out after 30 seconds")
 
 
 # Define function for detecting objects in a frame

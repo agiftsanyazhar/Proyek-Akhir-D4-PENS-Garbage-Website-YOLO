@@ -52,10 +52,14 @@ def app():
         st.write("Please fill in the form to start CCTV")
         form = st.form(key="open_cctv_form")
         url = form.text_input(
-            "Enter a Network URL",
-            value="rtsp://<username>:<password>@<ip>:<port>",
+            "Enter a RTSP URL",
+            placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>",
         )
-        form.caption("Example: rtsp://admin:12345678@127.0.0.1:8080")
+        form.caption(
+            "Note: The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:12345678@127.0.0.1:8080/stream1)"
+        )
         submit = form.form_submit_button("Start CCTV")
-        if submit:
+        if not url and submit:
+            st.error("Please enter a RTSP URL")
+        elif url and submit:
             dc.cctv_detection(url)
