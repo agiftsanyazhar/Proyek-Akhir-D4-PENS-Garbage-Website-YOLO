@@ -67,7 +67,7 @@ def app():
                 if st.button("Last", key="last_top"):
                     st.session_state["current_page"] = total_pages
                     st.rerun()
-
+        st.write("---")
         for index, row in events_page.iterrows():
             st.write(f"#### Event {row['#']}")
 
