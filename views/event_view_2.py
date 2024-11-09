@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 from io import BytesIO
-from controllers import event_controller as ec
+from controllers.event_controller import index as index_view
 
 
 def paginate_dataframe(df, page_size=5, page_num=1):
@@ -15,7 +15,7 @@ def paginate_dataframe(df, page_size=5, page_num=1):
 def app():
     st.title("Application for Detecting Littering Actions using YOLO - Events (2)")
 
-    events = ec.index()
+    events = index_view()
     events_df = pd.DataFrame(
         events, columns=["id", "file_path", "detected_object", "created_at"]
     )

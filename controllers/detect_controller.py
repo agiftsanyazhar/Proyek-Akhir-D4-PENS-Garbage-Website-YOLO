@@ -7,7 +7,7 @@ import time
 import ffmpeg
 import re
 from ultralytics import YOLO
-from controllers import event_controller as ec
+from controllers.event_controller import save_detected_image, log_event_to_db
 
 class_names = [
     "Others",
@@ -154,8 +154,8 @@ def process_frame(frame):
                 )
 
     if detected_objects:
-        file_path = ec.save_detected_image(frame)
-        ec.log_event_to_db(file_path, detected_objects)
+        file_path = save_detected_image(frame)
+        log_event_to_db(file_path, detected_objects)
 
     return frame
 

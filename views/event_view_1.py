@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
-from controllers import event_controller as ec
+from controllers.event_controller import index
 
 
 def app():
     st.title("Application for Detecting Littering Actions using YOLO - Events (1)")
 
-    events = ec.index()
+    events = index()
     events_df = pd.DataFrame(
         events, columns=["id", "file_path", "detected_object", "created_at"]
     )

@@ -1,7 +1,14 @@
 import cv2
 import streamlit as st
 import numpy as np
-from controllers import detect_controller as dc
+from controllers.detect_controller import (
+    process_frame,
+    handle_uploaded_file,
+    process_video,
+    record_video,
+    live_detection,
+    cctv_detection,
+)
 
 
 def app():
@@ -17,15 +24,15 @@ def app():
             "Upload an image", type=["jpg", "jpeg", "png"]
         )
         if uploaded_image:
-            process_func = lambda path: dc.process_frame(cv2.imread(path))
-            dc.handle_uploaded_file(uploaded_image, "image", process_func, "image/jpeg")
+            process_func = lambda path: process_frame(cv2.imread(path))
+            handle_uploaded_file(uploaded_image, "image", process_func, "image/jpeg")
 
     with detect_video_tab:
         st.header("Detect from Video File")
         uploaded_video = st.file_uploader("Upload a video", type=["mp4"])
         if uploaded_video:
-            process_func = lambda path: dc.process_video(path)
-            dc.handle_uploaded_file(uploaded_video, "video", process_func, "video/mp4")
+            process_func = lambda path: process_video(path)
+            handle_uploaded_file(uploaded_video, "video", process_func, "video/mp4")
 
     with detect_webcam_tab:
         st.header("Open Webcam")
@@ -37,18 +44,18 @@ def app():
             picture = st.camera_input("Take a photo", disabled=not enable)
             if picture:
                 image_data = picture.getvalue()
-                process_func = lambda data: dc.process_frame(
+                process_func = lambda data: process_frame(
                     cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
                 )
-                dc.handle_uploaded_file(image_data, "image", process_func, "image/jpeg")
+                handle_uploaded_file(image_data, "image", process_func, "image/jpeg")
 
         elif mode == "Video":
             st.subheader("Record Video")
-            dc.record_video()
+            record_video()
 
         elif mode == "Live":
             st.subheader("Live Detection")
-            dc.live_detection()
+            live_detection()
 
     with detect_cctv_tab:
         st.header("Open CCTV")
@@ -65,4 +72,4 @@ def app():
         if not url and submit:
             st.error("Please enter a RTSP URL")
         elif url and submit:
-            dc.cctv_detection(url)
+            cctv_detection(url)

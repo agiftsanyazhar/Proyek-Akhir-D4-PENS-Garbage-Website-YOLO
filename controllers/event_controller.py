@@ -2,12 +2,12 @@ import os
 import cv2
 import datetime
 import json
-from config import connection as cn
+from config.connection import get_db_connection
 
 
 def index():
     try:
-        with cn.get_db_connection() as connection:
+        with get_db_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM events")
                 events = cursor.fetchall()
@@ -39,7 +39,7 @@ def save_detected_image(frame):
 def log_event_to_db(file_path, detected_object):
     try:
         timestamp = datetime.datetime.now()
-        connection = cn.get_db_connection()
+        connection = get_db_connection()
         cursor = connection.cursor()
         detected_object_json = json.dumps(detected_object)
         cursor.execute(
