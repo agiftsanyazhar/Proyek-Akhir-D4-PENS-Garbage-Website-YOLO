@@ -20,103 +20,107 @@ def app():
         events, columns=["id", "file_path", "detected_object", "created_at"]
     )
 
-    events_df.rename(
-        columns={
-            "id": "#",
-            "file_path": "Image",
-            "detected_object": "Detected Object",
-            "created_at": "Date",
-        },
-        inplace=True,
-    )
-    events_df["id"] = range(1, len(events_df) + 1)
-    events_df["Detected Object"] = events_df["Detected Object"].apply(
-        lambda x: list(set(eval(x)))
-    )
+    if events_df.empty:
+        st.write("No events found")
+    else:
 
-    page_size = 5
-    total_pages = (len(events_df) // page_size) + (
-        1 if len(events_df) % page_size != 0 else 0
-    )
-    current_page = st.session_state.get("current_page", 1)
-    events_page = paginate_dataframe(events_df, page_size, current_page)
+        events_df.rename(
+            columns={
+                "id": "#",
+                "file_path": "Image",
+                "detected_object": "Detected Object",
+                "created_at": "Date",
+            },
+            inplace=True,
+        )
+        events_df["id"] = range(1, len(events_df) + 1)
+        events_df["Detected Object"] = events_df["Detected Object"].apply(
+            lambda x: list(set(eval(x)))
+        )
 
-    st.write(f"Page {current_page} of {total_pages}")
-    col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
-    with col1:
-        if current_page > 1:
-            if st.button("First", key="first_top"):
-                st.session_state["current_page"] = 1
-                st.rerun()
-    with col2:
-        if current_page > 1:
-            if st.button("Previous", key="previous_top"):
-                st.session_state["current_page"] = current_page - 1
-                st.rerun()
-    with col3:
-        if current_page < total_pages:
-            if st.button("Next", key="next_top"):
-                st.session_state["current_page"] = current_page + 1
-                st.rerun()
-    with col4:
-        if current_page < total_pages:
-            if st.button("Last", key="last_top"):
-                st.session_state["current_page"] = total_pages
-                st.rerun()
+        page_size = 5
+        total_pages = (len(events_df) // page_size) + (
+            1 if len(events_df) % page_size != 0 else 0
+        )
+        current_page = st.session_state.get("current_page", 1)
+        events_page = paginate_dataframe(events_df, page_size, current_page)
 
-    for index, row in events_page.iterrows():
-        st.write(f"#### Event {row['#']}")
+        st.write(f"Page {current_page} of {total_pages}")
+        col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
+        with col1:
+            if current_page > 1:
+                if st.button("First", key="first_top"):
+                    st.session_state["current_page"] = 1
+                    st.rerun()
+        with col2:
+            if current_page > 1:
+                if st.button("Previous", key="previous_top"):
+                    st.session_state["current_page"] = current_page - 1
+                    st.rerun()
+        with col3:
+            if current_page < total_pages:
+                if st.button("Next", key="next_top"):
+                    st.session_state["current_page"] = current_page + 1
+                    st.rerun()
+        with col4:
+            if current_page < total_pages:
+                if st.button("Last", key="last_top"):
+                    st.session_state["current_page"] = total_pages
+                    st.rerun()
 
-        cols = st.columns([1, 4])
-        with cols[0]:
-            try:
-                img = Image.open(row["Image"])
-                st.image(img, use_column_width=True)
+        for index, row in events_page.iterrows():
+            st.write(f"#### Event {row['#']}")
 
-                buffered = BytesIO()
-                img.save(buffered, format="JPEG")
-                img_data = buffered.getvalue()
+            cols = st.columns([1, 4])
+            with cols[0]:
+                try:
+                    img = Image.open(row["Image"])
+                    st.image(img, use_column_width=True)
 
-                @st.fragment
-                def download_button():
-                    st.download_button(
-                        label="Download",
-                        data=img_data,
-                        file_name=os.path.basename(row["Image"]),
-                        mime="image/jpeg",
-                        key=row["#"],
-                    )
+                    buffered = BytesIO()
+                    img.save(buffered, format="JPEG")
+                    img_data = buffered.getvalue()
 
-                download_button()
+                    @st.fragment
+                    def download_button():
+                        st.download_button(
+                            label="Download",
+                            data=img_data,
+                            file_name=os.path.basename(row["Image"]),
+                            mime="image/jpeg",
+                            key=row["#"],
+                        )
 
-            except FileNotFoundError:
-                st.text("Image not found")
+                    download_button()
 
-        with cols[1]:
-            st.write("**Detected Objects:**", ", ".join(row["Detected Object"]))
-            st.write("**Date:**", row["Date"])
+                except FileNotFoundError:
+                    st.text("Image not found")
 
-        st.write("---")
+            with cols[1]:
+                st.write("**Detected Objects:**", ", ".join(row["Detected Object"]))
+                st.write("**Date:**", row["Date"])
 
-    col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
-    with col1:
-        if current_page > 1:
-            if st.button("First", key="first_bottom"):
-                st.session_state["current_page"] = 1
-                st.rerun()
-    with col2:
-        if current_page > 1:
-            if st.button("Previous", key="previous_bottom"):
-                st.session_state["current_page"] = current_page - 1
-                st.rerun()
-    with col3:
-        if current_page < total_pages:
-            if st.button("Next", key="next_bottom"):
-                st.session_state["current_page"] = current_page + 1
-                st.rerun()
-    with col4:
-        if current_page < total_pages:
-            if st.button("Last", key="last_bottom"):
-                st.session_state["current_page"] = total_pages
-                st.rerun()
-    st.write(f"Page {current_page} of {total_pages}")
+            st.write("---")
+
+        col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
+        with col1:
+            if current_page > 1:
+                if st.button("First", key="first_bottom"):
+                    st.session_state["current_page"] = 1
+                    st.rerun()
+        with col2:
+            if current_page > 1:
+                if st.button("Previous", key="previous_bottom"):
+                    st.session_state["current_page"] = current_page - 1
+                    st.rerun()
+        with col3:
+            if current_page < total_pages:
+                if st.button("Next", key="next_bottom"):
+                    st.session_state["current_page"] = current_page + 1
+                    st.rerun()
+        with col4:
+            if current_page < total_pages:
+                if st.button("Last", key="last_bottom"):
+                    st.session_state["current_page"] = total_pages
+                    st.rerun()
+        st.write(f"Page {current_page} of {total_pages}")
