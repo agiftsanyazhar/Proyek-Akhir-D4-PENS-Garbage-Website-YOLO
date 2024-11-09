@@ -3,11 +3,11 @@ import cv2
 import streamlit as st
 import math
 import datetime
-import controllers.event_controller as ec
 import time
 import ffmpeg
 import re
 from ultralytics import YOLO
+from controllers import event_controller as ec
 
 class_names = [
     "Others",

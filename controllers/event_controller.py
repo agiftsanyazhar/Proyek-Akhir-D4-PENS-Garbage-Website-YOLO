@@ -1,8 +1,8 @@
 import os
 import cv2
 import datetime
-import config.connection as cn
 import json
+from config import connection as cn
 
 
 def index():

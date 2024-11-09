@@ -1,7 +1,7 @@
 import cv2
 import streamlit as st
 import numpy as np
-import controllers.detect_controller as dc
+from controllers import detect_controller as dc
 
 
 def app():

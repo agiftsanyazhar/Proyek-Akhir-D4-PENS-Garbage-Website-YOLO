@@ -1,6 +1,6 @@
 import streamlit as st
-import controllers.event_controller as ec
 import pandas as pd
+from controllers import event_controller as ec
 
 
 def app():

@@ -1,9 +1,9 @@
 import os
 import streamlit as st
-import controllers.event_controller as ec
 import pandas as pd
 from PIL import Image
 from io import BytesIO
+from controllers import event_controller as ec
 
 
 def paginate_dataframe(df, page_size=5, page_num=1):

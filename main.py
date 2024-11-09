@@ -3,9 +3,8 @@
 # =========================
 
 import streamlit as st
-import views.detect_view as dv
-import views.event_view_1 as ev1
-import views.event_view_2 as ev2
+from views import detect_view as dv, event_view_1 as ev1, event_view_2 as ev2
+
 
 # Streamlit configuration
 st.set_page_config(
