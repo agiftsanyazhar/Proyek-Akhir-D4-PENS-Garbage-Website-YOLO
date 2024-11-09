@@ -12,7 +12,6 @@ def index():
     events = cursor.fetchall()
     cursor.close()
     connection.close()
-
     return events
 
 
@@ -27,7 +26,6 @@ def save_detected_image(frame):
     os.makedirs(event_dir, exist_ok=True)
     file_path = os.path.join(event_dir, file_name)
     cv2.imwrite(file_path, frame)
-
     return file_path
 
 

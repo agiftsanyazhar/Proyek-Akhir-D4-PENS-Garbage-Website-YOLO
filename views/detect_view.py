@@ -7,8 +7,8 @@ import controllers.detect_controller as dc
 def app():
     st.title("Application for Detecting Littering Actions using YOLO - Detect")
 
-    detect_image_tab, detect_video_tab, detect_webcam_tab = st.tabs(
-        ["Detect from Image File", "Detect from Video File", "Open Webcam"]
+    detect_image_tab, detect_video_tab, detect_webcam_tab, detect_cctv_tab = st.tabs(
+        ["Detect from Image File", "Detect from Video File", "Open Webcam", "Open CCTV"]
     )
 
     with detect_image_tab:
@@ -41,11 +41,12 @@ def app():
 
         elif mode == "Video":
             st.subheader("Record Video")
-            enable = st.checkbox("Enable camera", key="record_video_tab")
-            if enable:
-                dc.record_video()
+            dc.record_video()
 
         elif mode == "Live":
             st.subheader("Live Detection")
-            if st.button("Start Webcam", key="start_webcam"):
-                dc.live_detection()
+            dc.live_detection()
+
+    with detect_cctv_tab:
+        st.subheader("Open CCTV")
+        st.video("https://youtu.be/7f4bXn0eCqg")

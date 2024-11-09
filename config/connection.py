@@ -8,7 +8,6 @@ def get_db_connection():
         user="root",
         password="",
     )
-
     return connection
 
 
