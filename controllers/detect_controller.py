@@ -56,7 +56,7 @@ def get_camera_list():
 def camera_preview(type=None):
     camera_list = get_camera_list()
     if not camera_list:
-        st.error("No camera devices found!")
+        st.error("No camera devices found")
         return
 
     selected_camera = st.selectbox(
