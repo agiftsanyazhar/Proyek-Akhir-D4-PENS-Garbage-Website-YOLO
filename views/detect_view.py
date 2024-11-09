@@ -67,7 +67,6 @@ def app():
         form.caption(
             "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:12345678@127.0.0.1:8080/stream1)"
         )
-        form.caption("Note: Fields marked with * are mandatory")
         submit = form.form_submit_button("Start CCTV")
         if not url and submit:
             st.error("Please enter a RTSP URL")
