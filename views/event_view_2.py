@@ -33,7 +33,7 @@ def app():
             },
             inplace=True,
         )
-        events_df["id"] = range(1, len(events_df) + 1)
+        events_df["#"] = range(1, len(events_df) + 1)
         events_df["Detected Object"] = events_df["Detected Object"].apply(
             lambda x: list(set(eval(x)))
         )
