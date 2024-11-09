@@ -79,6 +79,7 @@ def app():
 
             st.write("---")
 
+        st.write(f"Page {current_page} of {total_pages}")
         col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
         with col1:
             if current_page > 1:
@@ -100,4 +101,3 @@ def app():
                 if st.button("Last", key="last_bottom"):
                     st.session_state["current_page"] = total_pages
                     st.rerun()
-        st.write(f"Page {current_page} of {total_pages}")

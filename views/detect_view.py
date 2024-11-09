@@ -12,6 +12,7 @@ def app():
     )
 
     with detect_image_tab:
+        st.header("Detect from Image File")
         uploaded_image = st.file_uploader(
             "Upload an image", type=["jpg", "jpeg", "png"]
         )
@@ -20,12 +21,14 @@ def app():
             dc.handle_uploaded_file(uploaded_image, "image", process_func, "image/jpeg")
 
     with detect_video_tab:
+        st.header("Detect from Video File")
         uploaded_video = st.file_uploader("Upload a video", type=["mp4"])
         if uploaded_video:
             process_func = lambda path: dc.process_video(path)
             dc.handle_uploaded_file(uploaded_video, "video", process_func, "video/mp4")
 
     with detect_webcam_tab:
+        st.header("Open Webcam")
         mode = st.selectbox("Select Mode", ["Photo", "Video", "Live"])
 
         if mode == "Photo":
@@ -48,16 +51,16 @@ def app():
             dc.live_detection()
 
     with detect_cctv_tab:
-        st.subheader("Open CCTV")
-        st.write("Please fill in the form to start CCTV")
+        st.header("Open CCTV")
         form = st.form(key="open_cctv_form")
         url = form.text_input(
-            "Enter a RTSP URL",
+            "Enter a RTSP URL *",
             placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>",
         )
         form.caption(
-            "Note: The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:12345678@127.0.0.1:8080/stream1)"
+            "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:12345678@127.0.0.1:8080/stream1)"
         )
+        form.caption("Note: Fields marked with * are mandatory")
         submit = form.form_submit_button("Start CCTV")
         if not url and submit:
             st.error("Please enter a RTSP URL")
