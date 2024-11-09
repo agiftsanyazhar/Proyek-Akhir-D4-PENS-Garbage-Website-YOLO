@@ -45,29 +45,6 @@ def app():
         current_page = st.session_state.get("current_page", 1)
         events_page = paginate_dataframe(events_df, page_size, current_page)
 
-        st.write(f"Page {current_page} of {total_pages}")
-        col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
-        with col1:
-            if current_page > 1:
-                if st.button("First", key="first_top"):
-                    st.session_state["current_page"] = 1
-                    st.rerun()
-        with col2:
-            if current_page > 1:
-                if st.button("Previous", key="previous_top"):
-                    st.session_state["current_page"] = current_page - 1
-                    st.rerun()
-        with col3:
-            if current_page < total_pages:
-                if st.button("Next", key="next_top"):
-                    st.session_state["current_page"] = current_page + 1
-                    st.rerun()
-        with col4:
-            if current_page < total_pages:
-                if st.button("Last", key="last_top"):
-                    st.session_state["current_page"] = total_pages
-                    st.rerun()
-        st.write("---")
         for index, row in events_page.iterrows():
             st.write(f"#### Event {row['#']}")
 
