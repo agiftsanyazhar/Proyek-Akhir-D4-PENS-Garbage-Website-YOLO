@@ -11,7 +11,16 @@ def index():
             with connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM events")
                 events = cursor.fetchall()
-        return events
+
+        # Create a dictionary to hold unique file paths and their associated data
+        unique_events = {}
+        for event in events:
+            file_path = event[1]
+            if file_path not in unique_events:
+                unique_events[file_path] = event
+
+        # Convert the dictionary values back to a list
+        return list(unique_events.values())
     except Exception as e:
         print(f"Error retrieving events from database: {str(e)}")
         return []

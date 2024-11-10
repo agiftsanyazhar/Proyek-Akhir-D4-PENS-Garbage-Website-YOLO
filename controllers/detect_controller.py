@@ -10,30 +10,112 @@ from ultralytics import YOLO
 from controllers.event_controller import save_detected_image, log_event_to_db
 
 class_names = [
-    "Others",
+    "Other",
     "Plastic",
     "Straw",
     "Paper",
     "Tissue",
     "Bottle",
-    "Beverage Carton Box",
+    "Tetra Pack",
     "Cigarette Pack",
     "Carton",
     "Food Container",
+    # ###############
+    # # Random Testing 1
+    # "Glass",
+    # "Metal",
+    # "Paper",
+    # "Plastic",
+    # "Waste",
+    # ###############
+    # # Random Testing 2
+    # "Aluminium Foil",
+    # "Bottle",
+    # "Bottle Cap",
+    # "Can",
+    # "Carton",
+    # "Cigarette",
+    # "Glass Bottle",
+    # "Lid",
+    # "Metal",
+    # "Metal Cap",
+    # "Other Litter",
+    # "Other Plastic",
+    # "Paper",
+    # "Plastic Bag",
+    # "Plastic Buoy",
+    # "Plastic Vessels",
+    # "Pop Tab",
+    # "Straw",
+    # "Styrofoam Cup",
+    # "Styrofoam Piece",
+    # "Styrofoam Buoy",
+    # "Wrapper",
+    # ###############
+    # # Random Testing 3
+    # "Blister Pack",
+    # "Bottle Cap",
+    # "Foam Waste",
+    # "Bottle",
+    # "Cup",
+    # "Plastic",
+    # "Soft Drink Can",
+    # "Tetra Pack",
 ]
 class_colors = {
-    "Others": (255, 0, 0),
+    "Other": (255, 0, 0),
     "Plastic": (255, 0, 128),
     "Straw": (255, 0, 255),
     "Paper": (179, 0, 255),
     "Tissue": (0, 255, 0),
     "Bottle": (0, 255, 255),
-    "Beverage Carton Box": (0, 128, 255),
+    "Tetra Pack": (0, 128, 255),
     "Cigarette Pack": (0, 0, 255),
     "Carton": (255, 255, 0),
     "Food Container": (255, 128, 0),
+    # ###############
+    # # Random Testing 1
+    # "Glass": (255, 0, 0),
+    # "Metal": (255, 0, 128),
+    # "Paper": (255, 0, 255),
+    # "Plastic": (179, 0, 255),
+    # "Waste": (0, 255, 0),
+    # ###############
+    # # Random Testing 2
+    # "Aluminium Foil": (255, 0, 0),
+    # "Bottle": (255, 0, 128),
+    # "Bottle Cap": (255, 0, 255),
+    # "Can": (179, 0, 255),
+    # "Carton": (0, 255, 0),
+    # "Cigarette": (0, 255, 255),
+    # "Glass Bottle": (0, 128, 255),
+    # "Lid": (0, 0, 255),
+    # "Metal": (255, 255, 0),
+    # "Metal Cap": (255, 128, 0),
+    # "Other Litter": (128, 128, 128),
+    # "Other Plastic": (128, 0, 0),
+    # "Paper": (0, 128, 0),
+    # "Plastic Bag": (0, 0, 128),
+    # "Plastic Buoy": (128, 0, 128),
+    # "Plastic Vessels": (128, 128, 0),
+    # "Pop Tab": (0, 128, 128),
+    # "Straw": (128, 0, 255),
+    # "Styrofoam Cup": (255, 128, 128),
+    # "Styrofoam Piece": (128, 255, 128),
+    # "Styrofoam Buoy": (128, 128, 255),
+    # "Wrapper": (255, 0, 128),
+    # ###############
+    # # Random Testing 3
+    # "Blister Pack": (255, 0, 0),
+    # "Bottle Cap": (255, 0, 128),
+    # "Foam Waste": (255, 0, 255),
+    # "Bottle": (179, 0, 255),
+    # "Cup": (0, 255, 0),
+    # "Plastic": (0, 255, 255),
+    # "Soft Drink Can": (0, 128, 255),
+    # "Tetra Pack": (0, 0, 255),
 }
-model = YOLO("garbage.pt")
+model = YOLO("models/garbage.pt")
 
 
 # Function to get the list of available cameras dynamically
@@ -202,7 +284,7 @@ def handle_uploaded_file(uploaded_file, file_type, process_func, mime_type):
             else:
                 processed_data = process_func(file_path)
 
-            output_dir = "output"
+            output_dir = "outputs"
             os.makedirs(output_dir, exist_ok=True)
             output_path = os.path.join(output_dir, file_name)
 
@@ -242,9 +324,9 @@ def process_video(video_path):
     fps = int(cap.get(cv2.CAP_PROP_FPS))
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-    output_dir = "output"
+    output_dir = "outputs"
     os.makedirs(output_dir, exist_ok=True)
-    out_path = os.path.join("output", os.path.basename(video_path))
+    out_path = os.path.join("outputs", os.path.basename(video_path))
     out = cv2.VideoWriter(
         out_path, cv2.VideoWriter_fourcc(*"H264"), fps, (frame_width, frame_height)
     )
@@ -277,7 +359,7 @@ def record_video():
     video_filename = st.session_state["video_filename"]
 
     uploads_dir = "uploads"
-    output_dir = "output"
+    output_dir = "outputs"
     os.makedirs(uploads_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
     video_path = os.path.join(uploads_dir, video_filename)

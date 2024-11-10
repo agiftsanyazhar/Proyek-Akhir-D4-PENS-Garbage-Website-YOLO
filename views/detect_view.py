@@ -64,8 +64,9 @@ def app():
             "Enter a RTSP URL *",
             placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>",
         )
+        form.caption("rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>")
         form.caption(
-            "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:12345678@127.0.0.1:8080/stream1)"
+            "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:password@127.0.0.1:80)"
         )
         submit = form.form_submit_button("Start CCTV")
         if not url and submit:

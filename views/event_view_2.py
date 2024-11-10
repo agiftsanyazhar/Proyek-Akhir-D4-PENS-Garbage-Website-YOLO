@@ -23,7 +23,6 @@ def app():
     if events_df.empty:
         st.write("No events found")
     else:
-
         events_df.rename(
             columns={
                 "id": "#",
@@ -33,6 +32,7 @@ def app():
             },
             inplace=True,
         )
+
         events_df["#"] = range(1, len(events_df) + 1)
         events_df["Detected Object"] = events_df["Detected Object"].apply(
             lambda x: list(set(eval(x)))
@@ -80,7 +80,7 @@ def app():
             st.write("---")
 
         st.write(f"Page {current_page} of {total_pages}")
-        col1, col2, col3, col4 = st.columns([1, 6, 1, 1])
+        col1, col2, col3, col4 = st.columns([1, 7, 1, 1])
         with col1:
             if current_page > 1:
                 if st.button("First", key="first_bottom"):

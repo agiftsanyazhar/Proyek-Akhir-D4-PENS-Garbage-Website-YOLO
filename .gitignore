@@ -1,5 +1,7 @@
 __pycache__
 .venv/
 events/
-output/
+models/*
+!models/garbage.pt
+outputs/
 uploads/
