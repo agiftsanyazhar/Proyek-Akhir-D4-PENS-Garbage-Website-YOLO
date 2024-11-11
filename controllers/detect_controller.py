@@ -20,47 +20,6 @@ class_names = [
     "Cigarette Pack",
     "Carton",
     "Food Container",
-    # ###############
-    # # Random Testing 1
-    # "Glass",
-    # "Metal",
-    # "Paper",
-    # "Plastic",
-    # "Waste",
-    # ###############
-    # # Random Testing 2
-    # "Aluminium Foil",
-    # "Bottle",
-    # "Bottle Cap",
-    # "Can",
-    # "Carton",
-    # "Cigarette",
-    # "Glass Bottle",
-    # "Lid",
-    # "Metal",
-    # "Metal Cap",
-    # "Other Litter",
-    # "Other Plastic",
-    # "Paper",
-    # "Plastic Bag",
-    # "Plastic Buoy",
-    # "Plastic Vessels",
-    # "Pop Tab",
-    # "Straw",
-    # "Styrofoam Cup",
-    # "Styrofoam Piece",
-    # "Styrofoam Buoy",
-    # "Wrapper",
-    # ###############
-    # # Random Testing 3
-    # "Blister Pack",
-    # "Bottle Cap",
-    # "Foam Waste",
-    # "Bottle",
-    # "Cup",
-    # "Plastic",
-    # "Soft Drink Can",
-    # "Tetra Pack",
 ]
 class_colors = {
     "Other": (255, 0, 0),
@@ -73,49 +32,9 @@ class_colors = {
     "Cigarette Pack": (0, 0, 255),
     "Carton": (255, 255, 0),
     "Food Container": (255, 128, 0),
-    # ###############
-    # # Random Testing 1
-    # "Glass": (255, 0, 0),
-    # "Metal": (255, 0, 128),
-    # "Paper": (255, 0, 255),
-    # "Plastic": (179, 0, 255),
-    # "Waste": (0, 255, 0),
-    # ###############
-    # # Random Testing 2
-    # "Aluminium Foil": (255, 0, 0),
-    # "Bottle": (255, 0, 128),
-    # "Bottle Cap": (255, 0, 255),
-    # "Can": (179, 0, 255),
-    # "Carton": (0, 255, 0),
-    # "Cigarette": (0, 255, 255),
-    # "Glass Bottle": (0, 128, 255),
-    # "Lid": (0, 0, 255),
-    # "Metal": (255, 255, 0),
-    # "Metal Cap": (255, 128, 0),
-    # "Other Litter": (128, 128, 128),
-    # "Other Plastic": (128, 0, 0),
-    # "Paper": (0, 128, 0),
-    # "Plastic Bag": (0, 0, 128),
-    # "Plastic Buoy": (128, 0, 128),
-    # "Plastic Vessels": (128, 128, 0),
-    # "Pop Tab": (0, 128, 128),
-    # "Straw": (128, 0, 255),
-    # "Styrofoam Cup": (255, 128, 128),
-    # "Styrofoam Piece": (128, 255, 128),
-    # "Styrofoam Buoy": (128, 128, 255),
-    # "Wrapper": (255, 0, 128),
-    # ###############
-    # # Random Testing 3
-    # "Blister Pack": (255, 0, 0),
-    # "Bottle Cap": (255, 0, 128),
-    # "Foam Waste": (255, 0, 255),
-    # "Bottle": (179, 0, 255),
-    # "Cup": (0, 255, 0),
-    # "Plastic": (0, 255, 255),
-    # "Soft Drink Can": (0, 128, 255),
-    # "Tetra Pack": (0, 0, 255),
 }
 model = YOLO("models/garbage.pt")
+# model = YOLO("models/train8.pt")
 
 
 # Function to get the list of available cameras dynamically
