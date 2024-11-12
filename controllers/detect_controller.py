@@ -6,35 +6,181 @@ import datetime
 import time
 import ffmpeg
 import re
+import random
 from ultralytics import YOLO
 from controllers.event_controller import save_detected_image, log_event_to_db
 
-class_names = [
-    "Other",
-    "Plastic",
-    "Straw",
-    "Paper",
-    "Tissue",
-    "Bottle",
-    "Tetra Pack",
-    "Cigarette Pack",
-    "Carton",
-    "Food Container",
-]
-class_colors = {
-    "Other": (255, 0, 0),
-    "Plastic": (255, 0, 128),
-    "Straw": (255, 0, 255),
-    "Paper": (179, 0, 255),
-    "Tissue": (0, 255, 0),
-    "Bottle": (0, 255, 255),
-    "Tetra Pack": (0, 128, 255),
-    "Cigarette Pack": (0, 0, 255),
-    "Carton": (255, 255, 0),
-    "Food Container": (255, 128, 0),
-}
-model = YOLO("models/garbage.pt")
-# model = YOLO("models/train8.pt")
+# class_names = [
+#     # "Other",
+#     # "Plastic",
+#     # "Straw",
+#     # "Paper",
+#     # "Tissue",
+#     # "Bottle",
+#     # "Tetra Pack",
+#     # "Cigarette Pack",
+#     # "Carton",
+#     # "Food Container",
+#     "Aerosol",
+#     "Aluminium blister pack",
+#     "Aluminium foil",
+#     "Battery",
+#     "Broken glass",
+#     "Carded blister pack",
+#     "Cigarette",
+#     "Clear plastic bottle",
+#     "Corrugated carton",
+#     "Crisp packet",
+#     "Disposable food container",
+#     "Disposable plastic cup",
+#     "Drink can",
+#     "Drink carton",
+#     "Egg carton",
+#     "Foam cup",
+#     "Foam food container",
+#     "Food Can",
+#     "Food waste",
+#     "Garbage bag",
+#     "Glass bottle",
+#     "Glass cup",
+#     "Glass jar",
+#     "Magazine paper",
+#     "Meal carton",
+#     "Metal bottle cap",
+#     "Metal lid",
+#     "Normal paper",
+#     "Other carton",
+#     "Other plastic",
+#     "Other plastic bottle",
+#     "Other plastic container",
+#     "Other plastic cup",
+#     "Other plastic wrapper",
+#     "Paper bag",
+#     "Paper cup",
+#     "Paper straw",
+#     "Pizza box",
+#     "Plastic bottle cap",
+#     "Plastic film",
+#     "Plastic glooves",
+#     "Plastic lid",
+#     "Plastic straw",
+#     "Plastic utensils",
+#     "Polypropylene bag",
+#     "Pop tab",
+#     "Rope - strings",
+#     "Scrap metal",
+#     "Shoe",
+#     "Single-use carrier bag",
+#     "Six pack rings",
+#     "Spread tub",
+#     "Squeezable tube",
+#     "Styrofoam piece",
+#     "Tissues",
+#     "Toilet tube",
+#     "Tupperware",
+#     "Unlabeled litter",
+#     "Wrapping paper",
+# ]
+# class_colors = {
+#     # "Other": (255, 0, 0),
+#     # "Plastic": (255, 0, 128),
+#     # "Straw": (255, 0, 255),
+#     # "Paper": (179, 0, 255),
+#     # "Tissue": (0, 255, 0),
+#     # "Bottle": (0, 255, 255),
+#     # "Tetra Pack": (0, 128, 255),
+#     # "Cigarette Pack": (0, 0, 255),
+#     # "Carton": (255, 255, 0),
+#     # "Food Container": (255, 128, 0),
+#     "Aerosol": (255, 128, 0),
+#     "Aluminium blister pack": (0, 128, 128),
+#     "Aluminium foil": (0, 128, 0),
+#     "Battery": (128, 0, 128),
+#     "Broken glass": (128, 128, 128),
+#     "Carded blister pack": (255, 0, 128),
+#     "Cigarette": (0, 0, 128),
+#     "Clear plastic bottle": (128, 0, 0),
+#     "Corrugated carton": (128, 128, 0),
+#     "Crisp packet": (0, 128, 128),
+#     "Disposable food container": (255, 128, 128),
+#     "Disposable plastic cup": (128, 0, 128),
+#     "Drink can": (0, 255, 128),
+#     "Drink carton": (128, 255, 128),
+#     "Egg carton": (128, 128, 255),
+#     "Foam cup": (255, 128, 0),
+#     "Foam food container": (255, 0, 128),
+#     "Food Can": (128, 0, 128),
+#     "Food waste": (128, 128, 128),
+#     "Garbage bag": (128, 128, 0),
+#     "Glass bottle": (0, 128, 128),
+#     "Glass cup": (0, 128, 0),
+#     "Glass jar": (128, 0, 128),
+#     "Magazine paper": (128, 128, 128),
+#     "Meal carton": (128, 128, 255),
+#     "Metal bottle cap": (255, 0, 128),
+#     "Metal lid": (0, 128, 128),
+#     "Normal paper": (128, 128, 128),
+#     "Other carton": (255, 128, 0),
+#     "Other plastic": (128, 0, 128),
+#     "Other plastic bottle": (128, 255, 128),
+#     "Other plastic container": (128, 128, 255),
+#     "Other plastic cup": (255, 128, 128),
+#     "Other plastic wrapper": (128, 0, 128),
+#     "Paper bag": (128, 128, 0),
+#     "Paper cup": (0, 255, 128),
+#     "Paper straw": (128, 255, 128),
+#     "Pizza box": (128, 128, 255),
+#     "Plastic bottle cap": (255, 0, 128),
+#     "Plastic film": (128, 0, 128),
+#     "Plastic glooves": (128, 128, 128),
+#     "Plastic lid": (128, 128, 0),
+#     "Plastic straw": (0, 255, 128),
+#     "Plastic utensils": (128, 255, 128),
+#     "Polypropylene bag": (128, 128, 255),
+#     "Pop tab": (255, 128, 0),
+#     "Rope - strings": (128, 0, 128),
+#     "Scrap metal": (128, 128, 128),
+#     "Shoe": (128, 128, 0),
+#     "Single-use carrier bag": (128, 0, 128),
+#     "Six pack rings": (128, 128, 255),
+#     "Spread tub": (255, 128, 0),
+#     "Squeezable tube": (128, 255, 128),
+#     "Styrofoam piece": (128, 128, 255),
+#     "Tissues": (128, 128, 0),
+#     "Toilet tube": (128, 0, 128),
+#     "Tupperware": (128, 128, 128),
+#     "Unlabeled litter": (128, 128, 128),
+#     "Wrapping paper": (128, 0, 128),
+# }
+
+
+# Automatically generate colors for classes from the model
+def generate_class_colors(model):
+    if hasattr(model, "names") and isinstance(model.names, list):
+        num_classes = len(model.names)
+    elif hasattr(model, "names") and isinstance(model.names, dict):
+        num_classes = len(model.names)
+    else:
+        raise ValueError("The model does not have class names defined.")
+
+    # Generate random distinct colors for each class
+    random.seed(42)  # For consistent color generation
+    colors = {
+        cls_name: (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
+        for cls_id, cls_name in model.names.items()
+    }
+
+    return colors
+
+
+# model = YOLO("models/garbage.pt")
+model = YOLO("models/train10.pt")
+
+class_colors = generate_class_colors(model)
 
 
 # Function to get the list of available cameras dynamically
@@ -138,9 +284,8 @@ def process_frame(frame):
             conf = math.ceil((box.conf[0] * 100)) / 100
             cls = int(box.cls[0])
 
-            if cls < len(class_names):
-                current_class = class_names[cls]
-                detected_objects.append(current_class)
+            if cls < len(model.names):
+                current_class = model.names[cls]
                 color = class_colors[current_class]
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
