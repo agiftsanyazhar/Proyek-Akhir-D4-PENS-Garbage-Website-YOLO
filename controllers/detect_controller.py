@@ -8,7 +8,7 @@ import ffmpeg
 import re
 import random
 from ultralytics import YOLO
-from controllers.event_controller import save_detected_image, log_event_to_db
+from controllers.event_controller import save_detected_image, store
 
 # class_names = [
 #     # "Other",
@@ -177,8 +177,8 @@ def generate_class_colors(model):
     return colors
 
 
-# model = YOLO("models/garbage.pt")
-model = YOLO("models/train10.pt")
+model = YOLO("models/garbage.pt")
+# model = YOLO("models/train12.pt")
 
 class_colors = generate_class_colors(model)
 
@@ -288,7 +288,7 @@ def process_frame(frame):
                 current_class = model.names[cls]
                 color = class_colors[current_class]
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 4)
                 cv2.putText(
                     frame,
                     f"{current_class} {conf}",
@@ -296,12 +296,12 @@ def process_frame(frame):
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
                     color,
-                    2,
+                    4,
                 )
 
     if detected_objects:
         file_path = save_detected_image(frame)
-        log_event_to_db(file_path, detected_objects)
+        store(file_path, detected_objects)
 
     return frame
 

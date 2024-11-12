@@ -45,7 +45,7 @@ def save_detected_image(frame):
 
 
 # Function to log event to MySQL database
-def log_event_to_db(file_path, detected_object):
+def store(file_path, detected_object):
     try:
         timestamp = datetime.datetime.now()
         connection = get_db_connection()
