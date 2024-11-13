@@ -1,7 +1,7 @@
 import cv2
 import streamlit as st
 import numpy as np
-from controllers.detect_controller import (
+from detect_controller import (
     process_frame,
     handle_uploaded_file,
     process_video,

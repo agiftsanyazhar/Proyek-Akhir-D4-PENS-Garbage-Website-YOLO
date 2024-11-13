@@ -3,9 +3,9 @@
 # =========================
 
 import streamlit as st
-from views.detect_view import app as dv
-from views.event_view_1 import app as ev1
-from views.event_view_2 import app as ev2
+from detect_view import app as dv
+from event_view_1 import app as ev1
+from event_view_2 import app as ev2
 
 
 # Streamlit configuration

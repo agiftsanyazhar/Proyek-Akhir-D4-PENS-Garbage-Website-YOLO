@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from controllers.event_controller import index
+from event_controller import index
 
 
 def app():

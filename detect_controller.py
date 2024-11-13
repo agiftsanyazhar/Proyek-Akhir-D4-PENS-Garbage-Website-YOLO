@@ -8,7 +8,7 @@ import ffmpeg
 import re
 import random
 from ultralytics import YOLO
-from controllers.event_controller import save_detected_image, store
+from event_controller import save_detected_image, store
 
 
 # Automatically generate colors for classes from the model

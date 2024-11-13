@@ -2,7 +2,7 @@ import os
 import cv2
 import datetime
 import json
-from config.connection import get_db_connection
+from connection import get_db_connection
 
 
 def index():
