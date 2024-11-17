@@ -1,43 +1,41 @@
 import os
 import cv2
 import streamlit as st
-import math
 import datetime
 import time
 import ffmpeg
 import re
-import random
 from ultralytics import YOLO
 from controllers.event_controller import save_detected_image, store
 
 
-# Automatically generate colors for classes from the model
-def generate_class_colors(model):
-    if hasattr(model, "names") and isinstance(model.names, list):
-        num_classes = len(model.names)
-    elif hasattr(model, "names") and isinstance(model.names, dict):
-        num_classes = len(model.names)
-    else:
-        raise ValueError("The model does not have class names defined.")
+class_names = [
+    "Other",
+    "Plastic",
+    "Straw",
+    "Paper",
+    "Tissue",
+    "Bottle",
+    "Tetra Pack",
+    "Cigarette Pack",
+    "Carton",
+    "Food Container",
+]
 
-    # Generate random distinct colors for each class
-    random.seed(42)  # For consistent color generation
-    colors = {
-        cls_name: (
-            random.randint(0, 255),
-            random.randint(0, 255),
-            random.randint(0, 255),
-        )
-        for cls_id, cls_name in model.names.items()
-    }
+class_colors = {
+    "Other": (255, 0, 0),
+    "Plastic": (255, 0, 128),
+    "Straw": (255, 0, 255),
+    "Paper": (179, 0, 255),
+    "Tissue": (0, 255, 0),
+    "Bottle": (0, 255, 255),
+    "Tetra Pack": (0, 128, 255),
+    "Cigarette Pack": (0, 0, 255),
+    "Carton": (255, 255, 0),
+    "Food Container": (255, 128, 0),
+}
 
-    return colors
-
-
-model = YOLO("models/garbage.pt")
-# model = YOLO("models/train12.pt")
-
-class_colors = generate_class_colors(model)
+model = YOLO("models/garbage_aug_yolov8m.pt")
 
 
 # Function to get the list of available cameras dynamically
@@ -138,17 +136,18 @@ def process_frame(frame):
     for result in results:
         for box in result.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
-            conf = math.ceil((box.conf[0] * 100)) / 100
+            conf = f"{box.conf[0] * 100:.2f}"
             cls = int(box.cls[0])
 
-            if cls < len(model.names):
-                current_class = model.names[cls]
+            if cls < len(class_names):
+                current_class = class_names[cls]
+                detected_objects.append(current_class)
                 color = class_colors[current_class]
 
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 cv2.putText(
                     frame,
-                    f"{current_class} {conf}",
+                    f"{current_class} {conf}%",
                     (max(0, x1), max(35, y1)),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,

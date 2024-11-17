@@ -2,6 +2,6 @@ __pycache__
 .venv/
 events/
 models/*
-!models/garbage.pt
+!models/garbage_aug_medium.pt
 outputs/
 uploads/

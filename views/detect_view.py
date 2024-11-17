@@ -62,9 +62,9 @@ def app():
         form = st.form(key="open_cctv_form")
         url = form.text_input(
             "Enter a RTSP URL *",
-            placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>",
+            placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameter>",
         )
-        form.caption("rtsp://<username>:<password>@<ip>:<port>/<optional-parameters>")
+        form.caption("rtsp://<username>:<password>@<ip>:<port>/<optional-parameter>")
         form.caption(
             "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:password@127.0.0.1:80)"
         )
