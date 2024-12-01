@@ -13,7 +13,7 @@ def paginate_dataframe(df, page_size=5, page_num=1):
 
 
 def app():
-    st.title("Application for Detecting Littering Actions using YOLO - Events (2)")
+    st.title("Real-Time Garbage Detection Application using CNN - Events (2)")
 
     events = index_view()
     events_df = pd.DataFrame(

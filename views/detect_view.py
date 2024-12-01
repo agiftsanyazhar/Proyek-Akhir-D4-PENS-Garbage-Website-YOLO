@@ -1,6 +1,7 @@
 import cv2
 import streamlit as st
 import numpy as np
+from ultralytics import YOLO
 from controllers.detect_controller import (
     process_frame,
     handle_uploaded_file,
@@ -12,7 +13,36 @@ from controllers.detect_controller import (
 
 
 def app():
-    st.title("Application for Detecting Littering Actions using YOLO - Detect")
+    st.title("Real-Time Garbage Detection Application using CNN - Detect")
+
+    # model = st.selectbox(
+    #     "Select Model", ["PLitter", "TACO", "YOLOv8", "Upload your own model"]
+    # )
+    # st.caption(
+    #     """
+    #     - [PLitter](https://plitter.org/)
+    #       -  All Class : 10
+    #     - [TACO](http://tacodataset.org/)
+    #       -  Official Class : 59
+    #       -  Unofficial Class : 60
+    #       -  My Selected Class : 10 (Bottle, Carton, Cigarette Pack, Food Container, Other, Paper, Plastic, Straw, Tetra Pack, Tissue)
+    #     - [YOLOv8](https://docs.ultralytics.com/models/yolov8)
+    #       -  YOLOv8n : Lightweight model, fast and less accurate
+    #       -  YOLOv8s : Small model, balanced
+    #       -  YOLOv8m : Medium model, slow and more accurate
+    #     """
+    # )
+
+    # if model == "PLitter":
+    #     model = YOLO("models/plitter.pt")
+    # elif model == "TACO":
+    #     model = YOLO("models/taco.pt")
+    # elif model == "YOLOv8":
+    #     model = YOLO("models/yolov8n.pt")
+    # else:
+    #     uploaded_model = st.file_uploader("Upload your own model", type=["pt"])
+    #     if uploaded_model:
+    #         model = YOLO(uploaded_model)
 
     detect_image_tab, detect_video_tab, detect_webcam_tab, detect_cctv_tab = st.tabs(
         ["Detect from Image File", "Detect from Video File", "Open Webcam", "Open CCTV"]
@@ -64,9 +94,11 @@ def app():
             "Enter a RTSP URL *",
             placeholder="rtsp://<username>:<password>@<ip>:<port>/<optional-parameter>",
         )
-        form.caption("rtsp://<username>:<password>@<ip>:<port>/<optional-parameter>")
         form.caption(
-            "The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:password@127.0.0.1:80)"
+            """
+            - Example: rtsp://<username>:<password>@<ip>:<port>/<optional-parameter>
+            - The RTSP URL variant may be different depending on the type of CCTV camera you are using (e.g. rtsp://admin:password@127.0.0.1:80)
+            """
         )
         submit = form.form_submit_button("Start CCTV")
         if not url and submit:

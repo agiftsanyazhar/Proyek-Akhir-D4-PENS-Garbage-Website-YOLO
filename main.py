@@ -10,7 +10,7 @@ from views.event_view_2 import app as ev2
 
 # Streamlit configuration
 st.set_page_config(
-    page_title="Application for Detecting Littering Actions using YOLO",
+    page_title="Real-Time Garbage Detection Application using CNN",
     page_icon=":wastebasket:",
 )
 

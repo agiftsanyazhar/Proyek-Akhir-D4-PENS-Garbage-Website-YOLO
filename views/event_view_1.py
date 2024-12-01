@@ -4,7 +4,7 @@ from controllers.event_controller import index
 
 
 def app():
-    st.title("Application for Detecting Littering Actions using YOLO - Events (1)")
+    st.title("Real-Time Garbage Detection Application using CNN - Events (1)")
 
     events = index()
     events_df = pd.DataFrame(
