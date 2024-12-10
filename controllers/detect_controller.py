@@ -14,11 +14,11 @@ class_names = [
     "Plastic",
     "Straw",
     "Paper",
-    "Tissue",
+    "Cigarette Pack",
     "Bottle",
     "Tetra Pack",
-    "Cigarette Pack",
     "Carton",
+    "Tissue",
     "Food Container",
 ]
 
@@ -27,15 +27,15 @@ class_colors = {
     "Plastic": (255, 0, 128),
     "Straw": (255, 0, 255),
     "Paper": (179, 0, 255),
-    "Tissue": (0, 255, 0),
+    "Cigarette Pack": (0, 0, 255),
     "Bottle": (0, 255, 255),
     "Tetra Pack": (0, 128, 255),
-    "Cigarette Pack": (0, 0, 255),
     "Carton": (255, 255, 0),
+    "Tissue": (0, 255, 0),
     "Food Container": (255, 128, 0),
 }
 
-model = YOLO("models/train3.pt")
+model = YOLO("models/train14.pt")
 
 
 # Function to get the list of available cameras dynamically
