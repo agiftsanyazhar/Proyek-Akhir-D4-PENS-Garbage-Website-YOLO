@@ -15,35 +15,6 @@ from controllers.detect_controller import (
 def app():
     st.title("Real-Time Garbage Detection Application using CNN - Detect")
 
-    # model = st.selectbox(
-    #     "Select Model", ["PLitter", "TACO", "YOLOv8", "Upload your own model"]
-    # )
-    # st.caption(
-    #     """
-    #     - [PLitter](https://plitter.org/)
-    #       -  All Class : 10
-    #     - [TACO](http://tacodataset.org/)
-    #       -  Official Class : 59
-    #       -  Unofficial Class : 60
-    #       -  My Selected Class : 10 (Bottle, Carton, Cigarette Pack, Food Container, Other, Paper, Plastic, Straw, Tetra Pack, Tissue)
-    #     - [YOLOv8](https://docs.ultralytics.com/models/yolov8)
-    #       -  YOLOv8n : Lightweight model, fast and less accurate
-    #       -  YOLOv8s : Small model, balanced
-    #       -  YOLOv8m : Medium model, slow and more accurate
-    #     """
-    # )
-
-    # if model == "PLitter":
-    #     model = YOLO("models/plitter.pt")
-    # elif model == "TACO":
-    #     model = YOLO("models/taco.pt")
-    # elif model == "YOLOv8":
-    #     model = YOLO("models/yolov8n.pt")
-    # else:
-    #     uploaded_model = st.file_uploader("Upload your own model", type=["pt"])
-    #     if uploaded_model:
-    #         model = YOLO(uploaded_model)
-
     detect_image_tab, detect_video_tab, detect_webcam_tab, detect_cctv_tab = st.tabs(
         ["Detect from Image File", "Detect from Video File", "Open Webcam", "Open CCTV"]
     )

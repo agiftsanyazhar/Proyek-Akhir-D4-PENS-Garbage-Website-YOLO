@@ -35,11 +35,7 @@ class_colors = {
     "Food Container": (255, 128, 0),
 }
 
-model = YOLO("models/taco_unofficial_selected_class_yolov8s.pt")
-
-
-# def get_model(model_name):
-#     return YOLO("models/" + model_name + ".pt")
+model = YOLO("models/train3.pt")
 
 
 # Function to get the list of available cameras dynamically
