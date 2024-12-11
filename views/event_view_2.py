@@ -58,6 +58,8 @@ def app():
                     img.save(buffered, format="JPEG")
                     img_data = buffered.getvalue()
 
+                    st.caption(os.path.basename(row["Image"]))
+
                     @st.fragment
                     def download_button():
                         st.download_button(
